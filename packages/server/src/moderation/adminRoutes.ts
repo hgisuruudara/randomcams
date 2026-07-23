@@ -1,18 +1,26 @@
 import express, { Router } from 'express';
 import { prisma } from '../db';
+import { requireAdmin } from '../auth/middleware';
 
-// No admin authentication/authorization is wired up yet — this is a scaffold.
-// Before this is reachable from anywhere but localhost, put it behind real
-// staff auth (not the same session auth as regular users).
 export function moderationAdminRouter(): Router {
   const router = Router();
+  router.use(requireAdmin);
 
   router.get('/reports', async (req, res) => {
     const status = (req.query.status as string | undefined) ?? 'PENDING_REVIEW';
+    const userSummary = {
+      id: true,
+      email: true,
+      displayName: true,
+      banned: true,
+      verificationStatus: true,
+      verifiedGender: true,
+    } as const;
+
     const reports = await prisma.moderationReport.findMany({
       where: { status: status as never },
       orderBy: { createdAt: 'asc' },
-      include: { reportedUser: true, reporter: true },
+      include: { reportedUser: { select: userSummary }, reporter: { select: userSummary } },
     });
     res.json(reports);
   });
@@ -24,14 +32,24 @@ export function moderationAdminRouter(): Router {
   // in moderation/reports.ts).
   router.post('/reports/:id/resolve', express.json(), async (req, res) => {
     const { id } = req.params;
-    const { action, adminId } = req.body as { action: 'ACTION_TAKEN' | 'DISMISSED'; adminId: string };
+    const { action, reviewerLabel } = req.body as {
+      action: 'ACTION_TAKEN' | 'DISMISSED';
+      // Free-text name for the audit trail, not an authenticated identity —
+      // the shared ADMIN_TOKEN is the actual access control here. Fine while
+      // there's a handful of trusted staff; move to real per-admin accounts
+      // before that stops being true.
+      reviewerLabel?: string;
+    };
+    if (action !== 'ACTION_TAKEN' && action !== 'DISMISSED') {
+      return res.status(400).json({ error: 'action must be ACTION_TAKEN or DISMISSED' });
+    }
 
     const report = await prisma.moderationReport.findUnique({ where: { id } });
     if (!report) return res.status(404).json({ error: 'report not found' });
 
     await prisma.moderationReport.update({
       where: { id },
-      data: { status: action, reviewedByAdminId: adminId, reviewedAt: new Date() },
+      data: { status: action, reviewedByAdminId: reviewerLabel ?? 'admin', reviewedAt: new Date() },
     });
 
     if (action === 'ACTION_TAKEN') {

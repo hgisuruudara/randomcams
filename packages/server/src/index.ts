@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import Redis from 'ioredis';
+import { authRouter } from './auth/routes';
 import { verificationRouter } from './verification/routes';
 import { moderationAdminRouter } from './moderation/adminRoutes';
 import { createSocketServer } from './signaling/socketServer';
@@ -11,6 +12,7 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173' }));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
+app.use('/auth', authRouter());
 app.use('/verification', verificationRouter());
 app.use('/admin/moderation', moderationAdminRouter());
 

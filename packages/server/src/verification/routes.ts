@@ -2,23 +2,14 @@ import express, { Router } from 'express';
 import { prisma } from '../db';
 import { getKycProvider } from './index';
 import { applyVerificationResult } from './applyResult';
+import { requireAuth } from '../auth/middleware';
 
 export function verificationRouter(): Router {
   const router = Router();
   const provider = getKycProvider();
 
-  // In a real deployment, userId comes from an authenticated session, not the
-  // request body — this scaffold has no auth layer yet.
-  router.post('/start', express.json(), async (req, res) => {
-    const { userId } = req.body as { userId?: string };
-    if (!userId) {
-      return res.status(400).json({ error: 'userId is required' });
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return res.status(404).json({ error: 'user not found' });
-    }
+  router.post('/start', requireAuth, async (req, res) => {
+    const userId = req.userId!;
 
     const { providerReference, redirectUrl } = await provider.startVerification(userId);
 
@@ -35,8 +26,8 @@ export function verificationRouter(): Router {
     res.json({ redirectUrl });
   });
 
-  router.get('/status/:userId', async (req, res) => {
-    const user = await prisma.user.findUnique({ where: { id: req.params.userId } });
+  router.get('/status', requireAuth, async (req, res) => {
+    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
     if (!user) return res.status(404).json({ error: 'user not found' });
     res.json({ verificationStatus: user.verificationStatus, banned: user.banned });
   });

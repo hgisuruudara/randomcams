@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { startVerification } from '../api/rest';
 
 export function VerificationGate({
-  userId,
+  token,
   status,
   onRecheck,
 }: {
-  userId: string;
+  token: string;
   status: string;
   onRecheck: () => void;
 }) {
@@ -15,7 +15,7 @@ export function VerificationGate({
   async function handleStart() {
     setLoading(true);
     try {
-      const { redirectUrl } = await startVerification(userId);
+      const { redirectUrl } = await startVerification(token);
       window.location.href = redirectUrl;
     } finally {
       setLoading(false);

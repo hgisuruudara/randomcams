@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client';
 import { PublicUser, VerifiedGender } from '@randomcams/shared';
 import { connectSocket } from './api/socket';
 import { getVerificationStatus } from './api/rest';
+import { AuthForm } from './components/AuthForm';
 import { VerificationGate } from './components/VerificationGate';
 import { GenderFilterSelect } from './components/GenderFilterSelect';
 import { VideoChat } from './components/VideoChat';
@@ -14,24 +15,35 @@ type MatchState =
   | { phase: 'waiting' }
   | { phase: 'matched'; sessionId: string; peer: PublicUser; initiator: boolean };
 
+const TOKEN_STORAGE_KEY = 'randomcams_token';
+
 export function App() {
-  // No real auth in this scaffold — userId is entered directly. Replace with
-  // a real login/session flow before this goes anywhere near production.
-  const [userId, setUserId] = useState('');
-  const [confirmedUserId, setConfirmedUserId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY));
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
   const [seekingGenders, setSeekingGenders] = useState<VerifiedGender[]>(['female']);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [matchState, setMatchState] = useState<MatchState>({ phase: 'idle' });
 
-  useEffect(() => {
-    if (!confirmedUserId) return;
-    getVerificationStatus(confirmedUserId).then((r) => setVerificationStatus(r.verificationStatus));
-  }, [confirmedUserId]);
+  function handleAuthenticated(auth: { token: string }) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, auth.token);
+    setToken(auth.token);
+  }
+
+  function logout() {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    socket?.disconnect();
+    setToken(null);
+    setVerificationStatus(null);
+  }
 
   useEffect(() => {
-    if (!confirmedUserId || verificationStatus !== 'VERIFIED') return;
-    const s = connectSocket(confirmedUserId);
+    if (!token) return;
+    getVerificationStatus(token).then((r) => setVerificationStatus(r.verificationStatus));
+  }, [token]);
+
+  useEffect(() => {
+    if (!token || verificationStatus !== 'VERIFIED') return;
+    const s = connectSocket(token);
     setSocket(s);
 
     s.on('waitingForMatch', () => setMatchState({ phase: 'waiting' }));
@@ -44,7 +56,7 @@ export function App() {
     return () => {
       s.disconnect();
     };
-  }, [confirmedUserId, verificationStatus]);
+  }, [token, verificationStatus]);
 
   const { localStream, remoteStream } = useWebRTC(
     socket,
@@ -52,15 +64,8 @@ export function App() {
     matchState.phase === 'matched' ? matchState.initiator : false
   );
 
-  if (!confirmedUserId) {
-    return (
-      <div style={{ maxWidth: 480, margin: '80px auto', fontFamily: 'sans-serif' }}>
-        <h2>randomcams (dev scaffold)</h2>
-        <p>Enter a user id created via the server's seed/dev tooling.</p>
-        <input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="user id" />
-        <button onClick={() => setConfirmedUserId(userId)}>Continue</button>
-      </div>
-    );
+  if (!token) {
+    return <AuthForm onAuthenticated={handleAuthenticated} />;
   }
 
   if (verificationStatus === null) {
@@ -70,9 +75,9 @@ export function App() {
   if (verificationStatus !== 'VERIFIED') {
     return (
       <VerificationGate
-        userId={confirmedUserId}
+        token={token}
         status={verificationStatus.toLowerCase()}
-        onRecheck={() => getVerificationStatus(confirmedUserId).then((r) => setVerificationStatus(r.verificationStatus))}
+        onRecheck={() => getVerificationStatus(token).then((r) => setVerificationStatus(r.verificationStatus))}
       />
     );
   }
@@ -80,6 +85,9 @@ export function App() {
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', fontFamily: 'sans-serif' }}>
       <h2>randomcams</h2>
+      <button onClick={logout} style={{ float: 'right' }}>
+        Log out
+      </button>
 
       {matchState.phase === 'idle' && (
         <div>

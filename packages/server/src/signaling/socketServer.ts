@@ -10,6 +10,7 @@ import { prisma } from '../db';
 import { MatchingQueue } from '../matching/queue';
 import { toSharedGender } from '../matching/genderMap';
 import { createReport } from '../moderation/reports';
+import { verifyAuthToken } from '../auth/jwt';
 
 interface SocketState {
   userId: string;
@@ -29,14 +30,23 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
   const socketState = new Map<string, SocketState>();
   // socketId -> sessionId, so relay handlers know where to send offer/answer/ICE
   const socketToSession = new Map<string, string>();
+  const lastReportAt = new Map<string, number>();
+  const REPORT_COOLDOWN_MS = 5000;
 
   io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
     void (async () => {
-      // Placeholder auth: real deployment must authenticate via a signed
-      // session token in the handshake, not a bare userId.
-      const userId = socket.handshake.auth?.userId as string | undefined;
-      if (!userId) {
+      const token = socket.handshake.auth?.token as string | undefined;
+      if (!token) {
         socket.emit('errorMessage', { message: 'authentication required' });
+        socket.disconnect(true);
+        return;
+      }
+
+      let userId: string;
+      try {
+        userId = verifyAuthToken(token).userId;
+      } catch {
+        socket.emit('errorMessage', { message: 'invalid or expired token' });
         socket.disconnect(true);
         return;
       }
@@ -148,6 +158,25 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
 
       socket.on('report', ({ sessionId, reportedUserId, reason, note }) => {
         void (async () => {
+          if (socketToSession.get(socket.id) !== sessionId) {
+            socket.emit('errorMessage', { message: 'you are not part of that session' });
+            return;
+          }
+
+          const last = lastReportAt.get(user.id) ?? 0;
+          if (Date.now() - last < REPORT_COOLDOWN_MS) {
+            socket.emit('errorMessage', { message: 'please wait before submitting another report' });
+            return;
+          }
+
+          const session = await prisma.chatSession.findUnique({ where: { id: sessionId } });
+          const peerId = session?.userAId === user.id ? session.userBId : session?.userAId;
+          if (!session || peerId !== reportedUserId) {
+            socket.emit('errorMessage', { message: 'reportedUserId does not match this session' });
+            return;
+          }
+
+          lastReportAt.set(user.id, Date.now());
           const report = await createReport(user.id, { sessionId, reportedUserId, reason, note });
           socket.emit('reportAcknowledged', { reportId: report.id });
         })();

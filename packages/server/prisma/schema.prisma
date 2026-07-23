@@ -41,7 +41,11 @@ enum ModerationReportStatus {
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
-  passwordHash      String
+  // Null for accounts created via Google Sign-In that never set a password.
+  passwordHash      String?
+  // Set only for accounts that signed in with Google at least once. Used to
+  // find-or-link an account on subsequent Google logins.
+  googleId          String?            @unique
   displayName       String
   createdAt         DateTime           @default(now())
   banned            Boolean            @default(false)

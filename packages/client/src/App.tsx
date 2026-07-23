@@ -9,7 +9,10 @@ import { GenderFilterSelect } from './components/GenderFilterSelect';
 import { VideoChat } from './components/VideoChat';
 import { ReportButton } from './components/ReportButton';
 import { Logo } from './components/Logo';
+import { CameraSetup } from './components/CameraSetup';
+import { CallControls } from './components/CallControls';
 import { useWebRTC } from './hooks/useWebRTC';
+import { useMediaDevices } from './hooks/useMediaDevices';
 import { TOKEN_STORAGE_KEY } from './tokenStorage';
 
 type MatchState =
@@ -32,6 +35,7 @@ export function App() {
   const [seekingGenders, setSeekingGenders] = useState<VerifiedGender[]>(['female']);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [matchState, setMatchState] = useState<MatchState>({ phase: 'idle' });
+  const media = useMediaDevices();
 
   function handleAuthenticated(auth: { token: string }) {
     localStorage.setItem(TOKEN_STORAGE_KEY, auth.token);
@@ -41,6 +45,7 @@ export function App() {
   function logout() {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     socket?.disconnect();
+    media.disableCamera();
     setToken(null);
     setVerificationStatus(null);
   }
@@ -72,10 +77,11 @@ export function App() {
     };
   }, [token, verificationStatus]);
 
-  const { localStream, remoteStream } = useWebRTC(
+  const { remoteStream, replaceTrack } = useWebRTC(
     socket,
     matchState.phase === 'matched' ? matchState.sessionId : null,
-    matchState.phase === 'matched' ? matchState.initiator : false
+    matchState.phase === 'matched' ? matchState.initiator : false,
+    media.stream
   );
 
   if (!token) {
@@ -120,21 +126,30 @@ export function App() {
 
       <main className="mx-auto max-w-2xl px-4 py-10">
         {matchState.phase === 'idle' && (
-          <div className="card p-8">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Ready when you are</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Pick who you'd like to meet, then start.
-            </p>
-            <div className="mt-5">
-              <GenderFilterSelect value={seekingGenders} onChange={setSeekingGenders} />
+          <div className="space-y-4">
+            <CameraSetup media={media} />
+
+            <div className="card p-8">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Ready when you are</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Pick who you'd like to meet, then start.
+              </p>
+              <div className="mt-5">
+                <GenderFilterSelect value={seekingGenders} onChange={setSeekingGenders} />
+              </div>
+              <button
+                disabled={seekingGenders.length === 0 || !media.cameraOn}
+                onClick={() => socket?.emit('joinQueue', { seekingGenders })}
+                className="btn-primary mt-6 w-full sm:w-auto"
+              >
+                Start
+              </button>
+              {!media.cameraOn && (
+                <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+                  Turn your camera on above to start — video is required to match with anyone here.
+                </p>
+              )}
             </div>
-            <button
-              disabled={seekingGenders.length === 0}
-              onClick={() => socket?.emit('joinQueue', { seekingGenders })}
-              className="btn-primary mt-6 w-full sm:w-auto"
-            >
-              Start
-            </button>
           </div>
         )}
 
@@ -156,10 +171,13 @@ export function App() {
               </p>
             </div>
 
-            <VideoChat localStream={localStream} remoteStream={remoteStream} />
+            <VideoChat localStream={media.stream} remoteStream={remoteStream} />
 
-            <div className="flex items-center justify-between">
-              <ReportButton socket={socket} sessionId={matchState.sessionId} reportedUserId={matchState.peer.id} />
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <CallControls media={media} onReplaceVideoTrack={replaceTrack} />
+                <ReportButton socket={socket} sessionId={matchState.sessionId} reportedUserId={matchState.peer.id} />
+              </div>
               <button
                 onClick={() => {
                   socket?.emit('leaveSession', { sessionId: matchState.sessionId });

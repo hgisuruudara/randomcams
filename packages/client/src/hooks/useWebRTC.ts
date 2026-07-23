@@ -24,24 +24,20 @@ function buildIceServers(): RTCIceServer[] {
 
 const ICE_SERVERS = buildIceServers();
 
-export function useWebRTC(socket: Socket | null, sessionId: string | null, initiator: boolean) {
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+// The camera/mic stream is owned by useMediaDevices (so it persists across
+// the lobby preview and the call itself) and passed in rather than acquired
+// here. sessionId/initiator are the only things that should tear down and
+// recreate the peer connection - a camera/mic device swap mutates the same
+// stream's tracks in place and goes through replaceTrack() below instead,
+// so switching cameras mid-call doesn't cause a full renegotiation.
+export function useWebRTC(
+  socket: Socket | null,
+  sessionId: string | null,
+  initiator: boolean,
+  localStream: MediaStream | null
+) {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-      if (!cancelled) setLocalStream(stream);
-    });
-    return () => {
-      cancelled = true;
-      setLocalStream((s) => {
-        s?.getTracks().forEach((t) => t.stop());
-        return null;
-      });
-    };
-  }, []);
 
   useEffect(() => {
     if (!socket || !sessionId || !localStream) return;
@@ -99,7 +95,13 @@ export function useWebRTC(socket: Socket | null, sessionId: string | null, initi
       pcRef.current = null;
       setRemoteStream(null);
     };
-  }, [socket, sessionId, initiator, localStream]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, sessionId, initiator]);
 
-  return { localStream, remoteStream };
+  function replaceTrack(newTrack: MediaStreamTrack) {
+    const sender = pcRef.current?.getSenders().find((s) => s.track?.kind === newTrack.kind);
+    sender?.replaceTrack(newTrack);
+  }
+
+  return { remoteStream, replaceTrack };
 }

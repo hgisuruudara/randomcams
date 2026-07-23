@@ -12,7 +12,7 @@ export class MockKycProvider implements KycProvider {
     const providerReference = `mock_${randomUUID()}`;
     return {
       providerReference,
-      redirectUrl: `http://localhost:4000/mock-kyc/${providerReference}?userId=${userId}`,
+      redirectUrl: `http://localhost:4000/verification/mock-kyc/${providerReference}?userId=${userId}`,
     };
   }
 

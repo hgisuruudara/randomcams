@@ -21,6 +21,17 @@ describe('verification flow', () => {
     expect((await request(app).post('/verification/start')).status).toBe(401);
   });
 
+  it('the redirectUrl from /start is actually reachable (regression: was missing the /verification prefix)', async () => {
+    const { user, token } = await createTestUser();
+    createdUserIds.push(user.id);
+
+    const start = await request(app).post('/verification/start').set('Authorization', `Bearer ${token}`);
+    const path = new URL(start.body.redirectUrl).pathname;
+    const page = await request(app).get(path);
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('Mock identity verification');
+  });
+
   it('verifies an adult and sets their verified gender from the mock KYC result', async () => {
     const { user, token } = await createTestUser();
     createdUserIds.push(user.id);

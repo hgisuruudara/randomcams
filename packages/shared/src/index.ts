@@ -1,3 +1,10 @@
+// Bump whenever the Terms of Service or Privacy Policy change in a way that
+// should require existing users to re-accept. The server stamps this value
+// itself on signup (never trusts a client-supplied version) - it's exported
+// here only so the client can display "you're agreeing to version X" text
+// that actually matches what the server will record.
+export const CURRENT_TOS_VERSION = '2026-07-23';
+
 // Gender here means the legal sex marker extracted from a verified government ID
 // during KYC, not self-reported gender. See VerificationStatus — filtering only
 // applies once a user reaches 'verified'.

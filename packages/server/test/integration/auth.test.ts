@@ -25,11 +25,18 @@ describe('POST /auth/signup', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejects signup without accepting terms', async () => {
+    const res = await request(app)
+      .post('/auth/signup')
+      .send({ email: `${randomUUID()}@test.randomcams.local`, password: 'password123', displayName: 'X' });
+    expect(res.status).toBe(400);
+  });
+
   it('creates an account and normalizes the email', async () => {
     const rawEmail = `  Test-${randomUUID()}@Test.RandomCams.Local  `;
     const res = await request(app)
       .post('/auth/signup')
-      .send({ email: rawEmail, password: 'password123', displayName: 'Signup Test' });
+      .send({ email: rawEmail, password: 'password123', displayName: 'Signup Test', acceptedTerms: true });
 
     expect(res.status).toBe(201);
     expect(res.body.userId).toBeTruthy();
@@ -39,18 +46,20 @@ describe('POST /auth/signup', () => {
     const user = await prisma.user.findUnique({ where: { id: res.body.userId } });
     expect(user?.email).toBe(rawEmail.trim().toLowerCase());
     expect(user?.verificationStatus).toBe('UNVERIFIED');
+    expect(user?.tosAcceptedAt).toBeTruthy();
+    expect(user?.tosVersion).toBeTruthy();
   });
 
   it('rejects a duplicate email', async () => {
     const email = `${randomUUID()}@test.randomcams.local`;
     const first = await request(app)
       .post('/auth/signup')
-      .send({ email, password: 'password123', displayName: 'First' });
+      .send({ email, password: 'password123', displayName: 'First', acceptedTerms: true });
     createdUserIds.push(first.body.userId);
 
     const second = await request(app)
       .post('/auth/signup')
-      .send({ email, password: 'password123', displayName: 'Second' });
+      .send({ email, password: 'password123', displayName: 'Second', acceptedTerms: true });
     expect(second.status).toBe(409);
   });
 });
@@ -60,7 +69,7 @@ describe('POST /auth/login', () => {
     const email = `${randomUUID()}@test.randomcams.local`;
     const signup = await request(app)
       .post('/auth/signup')
-      .send({ email, password: 'password123', displayName: 'Login Test' });
+      .send({ email, password: 'password123', displayName: 'Login Test', acceptedTerms: true });
     createdUserIds.push(signup.body.userId);
 
     const login = await request(app).post('/auth/login').send({ email, password: 'password123' });
@@ -72,7 +81,7 @@ describe('POST /auth/login', () => {
     const email = `${randomUUID()}@test.randomcams.local`;
     const signup = await request(app)
       .post('/auth/signup')
-      .send({ email, password: 'password123', displayName: 'Wrong Password Test' });
+      .send({ email, password: 'password123', displayName: 'Wrong Password Test', acceptedTerms: true });
     createdUserIds.push(signup.body.userId);
 
     const login = await request(app).post('/auth/login').send({ email, password: 'wrong-password' });
@@ -83,7 +92,7 @@ describe('POST /auth/login', () => {
     const email = `${randomUUID()}@test.randomcams.local`;
     const signup = await request(app)
       .post('/auth/signup')
-      .send({ email, password: 'password123', displayName: 'Banned Test' });
+      .send({ email, password: 'password123', displayName: 'Banned Test', acceptedTerms: true });
     createdUserIds.push(signup.body.userId);
     await prisma.user.update({ where: { id: signup.body.userId }, data: { banned: true } });
 

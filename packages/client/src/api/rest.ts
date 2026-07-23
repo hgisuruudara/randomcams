@@ -4,11 +4,11 @@ function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
 }
 
-export async function signup(email: string, password: string, displayName: string) {
+export async function signup(email: string, password: string, displayName: string, acceptedTerms: boolean) {
   const res = await fetch(`${SERVER_URL}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, displayName }),
+    body: JSON.stringify({ email, password, displayName, acceptedTerms }),
   });
   const body = await res.json();
   if (!res.ok) throw new Error(body.error ?? 'signup failed');
@@ -26,11 +26,11 @@ export async function login(email: string, password: string) {
   return body as { userId: string; token: string };
 }
 
-export async function loginWithGoogle(idToken: string) {
+export async function loginWithGoogle(idToken: string, acceptedTerms: boolean) {
   const res = await fetch(`${SERVER_URL}/auth/google`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken }),
+    body: JSON.stringify({ idToken, acceptedTerms }),
   });
   const body = await res.json();
   if (!res.ok) throw new Error(body.error ?? 'Google sign-in failed');

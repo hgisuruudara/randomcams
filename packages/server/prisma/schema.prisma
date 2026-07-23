@@ -57,6 +57,13 @@ model User {
   // record-keeping). Encrypt at rest / restrict access in production.
   verifiedBirthdate  DateTime?
 
+  // Consent record for the ToS/Privacy Policy shown at signup. tosVersion
+  // lets a re-acceptance requirement be added later if those documents
+  // change materially - do not backfill old accounts as having accepted a
+  // newer version.
+  tosAcceptedAt      DateTime?
+  tosVersion         String?
+
   verificationRecords VerificationRecord[]
   reportsFiled        ModerationReport[] @relation("reporter")
   reportsReceived      ModerationReport[] @relation("reportedUser")

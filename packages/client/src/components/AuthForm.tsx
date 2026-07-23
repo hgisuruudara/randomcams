@@ -7,6 +7,7 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +16,8 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
     setError(null);
     setLoading(true);
     try {
-      const result = mode === 'signup' ? await signup(email, password, displayName) : await login(email, password);
+      const result =
+        mode === 'signup' ? await signup(email, password, displayName, acceptedTerms) : await login(email, password);
       onAuthenticated(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'something went wrong');
@@ -27,12 +29,14 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
   async function handleGoogleIdToken(idToken: string) {
     setError(null);
     try {
-      const result = await loginWithGoogle(idToken);
+      const result = await loginWithGoogle(idToken, acceptedTerms);
       onAuthenticated(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed');
     }
   }
+
+  const canSubmit = mode === 'login' || acceptedTerms;
 
   return (
     <div style={{ maxWidth: 360, margin: '80px auto', fontFamily: 'sans-serif' }}>
@@ -66,7 +70,30 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
           required
         />
         <br />
-        <button type="submit" disabled={loading}>
+        {mode === 'signup' && (
+          <>
+            <label style={{ fontSize: 13, display: 'flex', alignItems: 'flex-start', gap: 6, margin: '8px 0' }}>
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                I am 18 or older and agree to the{' '}
+                <a href="/terms" target="_blank" rel="noreferrer">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" target="_blank" rel="noreferrer">
+                  Privacy Policy
+                </a>
+                .
+              </span>
+            </label>
+          </>
+        )}
+        <button type="submit" disabled={loading || !canSubmit}>
           {mode === 'signup' ? 'Sign up' : 'Log in'}
         </button>
       </form>
@@ -76,7 +103,11 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
       </button>
 
       <p style={{ textAlign: 'center', margin: '16px 0' }}>or</p>
-      <GoogleSignInButton onIdToken={handleGoogleIdToken} />
+      {mode === 'signup' && !acceptedTerms ? (
+        <p style={{ fontSize: 12, color: '#666' }}>Accept the terms above to sign up with Google.</p>
+      ) : (
+        <GoogleSignInButton onIdToken={handleGoogleIdToken} />
+      )}
 
       <p style={{ fontSize: 12, color: '#666' }}>
         Signing up (either way) does not make you visible to other users yet — identity verification

@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
 import bcrypt from 'bcryptjs';
+import { CURRENT_TOS_VERSION } from '@randomcams/shared';
 import { prisma } from '../db';
 import { signAuthToken } from './jwt';
 import { verifyGoogleIdToken } from './google';
@@ -21,7 +22,11 @@ export function authRouter(): Router {
   router.use(createAuthRateLimiter());
 
   router.post('/signup', express.json(), async (req, res) => {
-    const { password, displayName } = req.body as { password?: string; displayName?: string };
+    const { password, displayName, acceptedTerms } = req.body as {
+      password?: string;
+      displayName?: string;
+      acceptedTerms?: boolean;
+    };
     const email = typeof req.body.email === 'string' ? normalizeEmail(req.body.email) : undefined;
 
     if (!email || !password || !displayName) {
@@ -36,6 +41,9 @@ export function authRouter(): Router {
     if (displayName.trim().length === 0 || displayName.length > MAX_DISPLAY_NAME_LENGTH) {
       return res.status(400).json({ error: `displayName must be 1-${MAX_DISPLAY_NAME_LENGTH} characters` });
     }
+    if (acceptedTerms !== true) {
+      return res.status(400).json({ error: 'you must accept the Terms of Service and Privacy Policy' });
+    }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -44,7 +52,13 @@ export function authRouter(): Router {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { email, passwordHash, displayName: displayName.trim() },
+      data: {
+        email,
+        passwordHash,
+        displayName: displayName.trim(),
+        tosAcceptedAt: new Date(),
+        tosVersion: CURRENT_TOS_VERSION,
+      },
     });
 
     const token = signAuthToken({ userId: user.id });
@@ -81,7 +95,7 @@ export function authRouter(): Router {
   // Every account, however it signed up, still has to clear the KYC flow in
   // ../verification before it can be matched.
   router.post('/google', express.json(), async (req, res) => {
-    const { idToken } = req.body as { idToken?: string };
+    const { idToken, acceptedTerms } = req.body as { idToken?: string; acceptedTerms?: boolean };
     if (!idToken) {
       return res.status(400).json({ error: 'idToken is required' });
     }
@@ -95,22 +109,29 @@ export function authRouter(): Router {
 
     let user = await prisma.user.findUnique({ where: { googleId: identity.googleId } });
     if (!user) {
-      // Link to an existing password account with the same email (Google
-      // already proved ownership of that email address), otherwise create
-      // a fresh account.
       const existingByEmail = await prisma.user.findUnique({ where: { email: identity.email } });
-      user = existingByEmail
-        ? await prisma.user.update({
-            where: { id: existingByEmail.id },
-            data: { googleId: identity.googleId },
-          })
-        : await prisma.user.create({
-            data: {
-              email: identity.email,
-              googleId: identity.googleId,
-              displayName: identity.displayName,
-            },
-          });
+      if (existingByEmail) {
+        // Link to an existing password account with the same email (Google
+        // already proved ownership of that email address) - they already
+        // accepted terms when that account was created.
+        user = await prisma.user.update({
+          where: { id: existingByEmail.id },
+          data: { googleId: identity.googleId },
+        });
+      } else {
+        if (acceptedTerms !== true) {
+          return res.status(400).json({ error: 'you must accept the Terms of Service and Privacy Policy' });
+        }
+        user = await prisma.user.create({
+          data: {
+            email: identity.email,
+            googleId: identity.googleId,
+            displayName: identity.displayName,
+            tosAcceptedAt: new Date(),
+            tosVersion: CURRENT_TOS_VERSION,
+          },
+        });
+      }
     }
 
     if (user.banned) {

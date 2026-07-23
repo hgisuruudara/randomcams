@@ -1,21 +1,10 @@
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
 import { createServer } from 'http';
 import Redis from 'ioredis';
-import { authRouter } from './auth/routes';
-import { verificationRouter } from './verification/routes';
-import { moderationAdminRouter } from './moderation/adminRoutes';
+import { createApp } from './app';
 import { createSocketServer } from './signaling/socketServer';
 
-const app = express();
-app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173' }));
-
-app.get('/health', (_req, res) => res.json({ ok: true }));
-app.use('/auth', authRouter());
-app.use('/verification', verificationRouter());
-app.use('/admin/moderation', moderationAdminRouter());
-
+const app = createApp();
 const httpServer = createServer(app);
 const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379');
 createSocketServer(httpServer, redis);

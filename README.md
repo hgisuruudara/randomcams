@@ -22,6 +22,7 @@ deliberately left unfinished with notes on why.
 - [Google Sign-In setup](#google-sign-in-setup)
 - [TURN server](#turn-server)
 - [Admin moderation panel](#admin-moderation-panel)
+- [Automated tests & CI](#automated-tests--ci)
 - [Branching](#branching)
 - [Production readiness checklist](#production-readiness-checklist)
 
@@ -193,6 +194,24 @@ immediately; "Dismiss" closes the report with no action. Both are recorded with 
 (a free-text name for the audit trail — the actual access control is the shared token, not this
 field).
 
+## Automated tests & CI
+
+```bash
+cd packages/server
+npm test          # runs once
+npm run typecheck # tsc over both src/ and test/ (vitest's esbuild transform doesn't type-check)
+```
+
+Needs a real Postgres reachable via `DATABASE_URL` (the integration tests exercise real HTTP
+routes end-to-end via supertest — signup/login validation, the full KYC verification flow
+including the age defense-in-depth check, moderation report creation/escalation, and the admin
+API's auth gate and data exposure). The matching queue is unit-tested against `ioredis-mock`
+instead, since it doesn't need a real Redis to verify its pairing logic.
+
+CI (`.github/workflows/ci.yml`) runs on every push and PR: spins up Postgres + Redis service
+containers, installs deps, generates the Prisma client, applies migrations, builds all three
+packages, typechecks, and runs the full test suite.
+
 ## Branching
 
 - `dev_izzy` — active development branch.
@@ -211,6 +230,9 @@ Things this codebase deliberately does **not** solve yet:
   vendor contract and legal reporting integration. See `moderation/csamHook.ts`.
 - **Real per-admin staff accounts.** The moderation API is a single shared secret, not
   individual accounts with role-based access and a real audit trail.
+- **Test coverage stops at the HTTP/matching layer.** Auth, verification, and moderation are
+  covered by real integration tests; the Socket.IO signaling/WebRTC path and the React client
+  have none yet.
 - **Payment processing.** Standard processors (Stripe, PayPal) prohibit adult-content
   businesses; budget for an adult-industry-specific processor (CCBill, Segpay, Epoch) or crypto.
 - **Hosting compliance.** AWS/GCP/Azure all have acceptable-use policies around adult content —

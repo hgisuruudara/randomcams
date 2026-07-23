@@ -4,7 +4,7 @@ import { KycVerificationResult } from './provider';
 
 const MINIMUM_AGE_YEARS = 18;
 
-function isAdult(birthdate: Date, referenceDate: Date = new Date()): boolean {
+export function isAdult(birthdate: Date, referenceDate: Date = new Date()): boolean {
   const cutoff = new Date(
     referenceDate.getFullYear() - MINIMUM_AGE_YEARS,
     referenceDate.getMonth(),

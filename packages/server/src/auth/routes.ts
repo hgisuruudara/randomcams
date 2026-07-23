@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../db';
 import { signAuthToken } from './jwt';
 import { verifyGoogleIdToken } from './google';
-import { authRateLimiter } from './rateLimit';
+import { createAuthRateLimiter } from './rateLimit';
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_DISPLAY_NAME_LENGTH = 60;
@@ -18,7 +18,7 @@ function normalizeEmail(email: string): string {
 
 export function authRouter(): Router {
   const router = Router();
-  router.use(authRateLimiter);
+  router.use(createAuthRateLimiter());
 
   router.post('/signup', express.json(), async (req, res) => {
     const { password, displayName } = req.body as { password?: string; displayName?: string };

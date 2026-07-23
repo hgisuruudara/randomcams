@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { verifyEmail } from '../api/rest';
 
+// Module-scoped rather than a ref: the verification token is single-use
+// server-side, so React StrictMode's dev-only double-invoke of this effect
+// would otherwise fire the request twice - the second call always fails
+// (token already consumed), and whichever response resolves last would win,
+// sometimes showing "invalid" even though verification actually succeeded.
+const attemptedTokens = new Set<string>();
+
 export function VerifyEmailPage() {
   const [status, setStatus] = useState<'checking' | 'done' | 'error'>('checking');
 
@@ -10,6 +17,9 @@ export function VerifyEmailPage() {
       setStatus('error');
       return;
     }
+    if (attemptedTokens.has(token)) return;
+    attemptedTokens.add(token);
+
     verifyEmail(token)
       .then(() => setStatus('done'))
       .catch(() => setStatus('error'));

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTheme } from '../theme';
 
 // Minimal shape of the Google Identity Services API we use. Loaded via the
 // script tag below rather than an npm package, since it's just a thin
@@ -42,6 +43,7 @@ function loadGoogleScript(): Promise<void> {
 export function GoogleSignInButton({ onIdToken }: { onIdToken: (idToken: string) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+  const { isDark } = useTheme();
 
   useEffect(() => {
     if (!clientId || !containerRef.current) return;
@@ -53,17 +55,21 @@ export function GoogleSignInButton({ onIdToken }: { onIdToken: (idToken: string)
         client_id: clientId,
         callback: (response) => onIdToken(response.credential),
       });
-      window.google.accounts.id.renderButton(containerRef.current, { theme: 'outline', size: 'large' });
+      containerRef.current.innerHTML = '';
+      window.google.accounts.id.renderButton(containerRef.current, {
+        theme: isDark ? 'filled_black' : 'outline',
+        size: 'large',
+      });
     });
 
     return () => {
       cancelled = true;
     };
-  }, [clientId, onIdToken]);
+  }, [clientId, onIdToken, isDark]);
 
   if (!clientId) {
     return (
-      <p style={{ fontSize: 12, color: '#666' }}>
+      <p className="text-xs text-slate-400 dark:text-slate-500">
         Google sign-in isn't configured (set VITE_GOOGLE_CLIENT_ID).
       </p>
     );

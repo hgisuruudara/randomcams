@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-white to-brand-50 text-slate-900 transition-colors duration-300;
+    @apply dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 dark:text-slate-100;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl border border-slate-200/70 bg-white/80 shadow-xl shadow-slate-200/50 backdrop-blur-sm;
+    @apply dark:border-slate-700/50 dark:bg-slate-900/70 dark:shadow-black/30;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold
+      transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-brand-600 to-fuchsia-600 text-white shadow-lg shadow-brand-500/30
+      hover:shadow-brand-500/50 hover:from-brand-500 hover:to-fuchsia-500 focus-visible:ring-brand-500
+      dark:focus-visible:ring-offset-slate-900;
+  }
+
+  .btn-secondary {
+    @apply btn bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:ring-slate-400
+      dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:focus-visible:ring-offset-slate-900;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-brand-700 hover:bg-brand-50 focus-visible:ring-brand-400
+      dark:text-brand-300 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900;
+  }
+
+  .btn-danger {
+    @apply btn bg-rose-600 text-white shadow-lg shadow-rose-500/30 hover:bg-rose-500
+      focus-visible:ring-rose-500 dark:focus-visible:ring-offset-slate-900;
+  }
+
+  .input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm text-slate-900
+      placeholder:text-slate-400 shadow-sm transition-colors focus:border-brand-400 focus:outline-none
+      focus:ring-2 focus:ring-brand-400/40
+      dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder:text-slate-500
+      dark:focus:border-brand-500;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400;
+  }
+
+  .link {
+    @apply font-medium text-brand-600 underline decoration-brand-300 underline-offset-2 transition-colors
+      hover:text-brand-700 dark:text-brand-400 dark:decoration-brand-700 dark:hover:text-brand-300;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .prose-legal h2 {
+    @apply mb-2 mt-8 text-lg font-semibold text-slate-900 first:mt-0 dark:text-slate-100;
+  }
+  .prose-legal p {
+    @apply mb-3 leading-relaxed text-slate-600 dark:text-slate-300;
+  }
+  .prose-legal ul {
+    @apply mb-3 ml-5 list-disc space-y-1.5 text-slate-600 dark:text-slate-300;
+  }
+}

@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css';
 import { App } from './App';
 import { AdminPanel } from './components/AdminPanel';
+import { ThemeToggle } from './components/ThemeToggle';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
@@ -19,6 +21,7 @@ function Root() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <ThemeToggle />
     <Root />
   </React.StrictMode>
 );

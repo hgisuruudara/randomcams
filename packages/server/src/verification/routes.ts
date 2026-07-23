@@ -38,14 +38,57 @@ export function verificationRouter(): Router {
   router.get('/mock-kyc/:providerReference', (req, res) => {
     const { providerReference } = req.params;
     res.type('html').send(`<!doctype html>
-<html><body style="font-family: sans-serif; max-width: 480px; margin: 40px auto;">
-<h3>Mock identity verification</h3>
-<p>This page stands in for a real KYC vendor's ID capture + liveness flow. Pick an outcome to simulate:</p>
-<button onclick="submit('MALE')">Simulate verified — Male, age 25</button><br /><br />
-<button onclick="submit('FEMALE')">Simulate verified — Female, age 25</button><br /><br />
-<button onclick="submit(null, true)">Simulate underage (rejected)</button><br /><br />
-<button onclick="submit(null, false, true)">Simulate rejected (failed ID check)</button>
-<p id="result"></p>
+<html>
+<head>
+<meta name="color-scheme" content="light dark">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #f5f3ff, #ffffff 60%, #fdf2ff);
+    color: #0f172a;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(135deg, #020617, #0f172a 60%, #1e1033); color: #f1f5f9; }
+    .card { background: rgba(15, 23, 42, 0.7) !important; border-color: rgba(51, 65, 85, 0.5) !important; }
+    button { background: rgba(30, 41, 59, 0.6) !important; color: #e2e8f0 !important; border-color: rgba(71, 85, 105, 0.6) !important; }
+    button:hover { border-color: #a78bfa !important; }
+    p.muted { color: #94a3b8 !important; }
+  }
+  .card {
+    max-width: 440px; width: 100%; margin: 24px; padding: 32px; border-radius: 24px;
+    background: rgba(255,255,255,0.85); border: 1px solid rgba(226,232,240,0.8);
+    box-shadow: 0 20px 40px -12px rgba(80, 40, 160, 0.15); backdrop-filter: blur(6px);
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+    background: #fef3c7; color: #92400e; font-size: 12px; font-weight: 600; margin-bottom: 16px;
+  }
+  h3 { margin: 0 0 8px; font-size: 20px; }
+  p { line-height: 1.5; }
+  p.muted { color: #64748b; font-size: 14px; }
+  button {
+    display: block; width: 100%; text-align: left; margin-bottom: 10px; padding: 12px 16px;
+    border-radius: 14px; border: 1px solid #e2e8f0; background: #fff; color: #0f172a;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  button:hover { border-color: #7c3aed; box-shadow: 0 4px 12px -4px rgba(124,58,237,0.3); }
+  #result { font-size: 13px; margin-top: 16px; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="badge">⚠ Mock / dev only</span>
+  <h3>Mock identity verification</h3>
+  <p class="muted">This page stands in for a real KYC vendor's ID capture + liveness flow. Pick an outcome to simulate:</p>
+  <button onclick="submit('MALE')">✅ Simulate verified — Male, age 25</button>
+  <button onclick="submit('FEMALE')">✅ Simulate verified — Female, age 25</button>
+  <button onclick="submit(null, true)">🚫 Simulate underage (rejected)</button>
+  <button onclick="submit(null, false, true)">❌ Simulate rejected (failed ID check)</button>
+  <p id="result" class="muted"></p>
+</div>
 <script>
   async function submit(gender, underage, rejected) {
     const body = underage

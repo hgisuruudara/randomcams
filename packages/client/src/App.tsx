@@ -8,6 +8,7 @@ import { VerificationGate } from './components/VerificationGate';
 import { GenderFilterSelect } from './components/GenderFilterSelect';
 import { VideoChat } from './components/VideoChat';
 import { ReportButton } from './components/ReportButton';
+import { Logo } from './components/Logo';
 import { useWebRTC } from './hooks/useWebRTC';
 import { TOKEN_STORAGE_KEY } from './tokenStorage';
 
@@ -15,6 +16,15 @@ type MatchState =
   | { phase: 'idle' }
   | { phase: 'waiting' }
   | { phase: 'matched'; sessionId: string; peer: PublicUser; initiator: boolean };
+
+function Spinner() {
+  return (
+    <svg className="h-5 w-5 animate-spin text-brand-500" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  );
+}
 
 export function App() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY));
@@ -73,7 +83,12 @@ export function App() {
   }
 
   if (verificationStatus === null) {
-    return <p>Loading…</p>;
+    return (
+      <div className="flex min-h-screen items-center justify-center gap-3 text-slate-400 dark:text-slate-500">
+        <Spinner />
+        <span className="text-sm">Loading…</span>
+      </div>
+    );
   }
 
   if (verificationStatus !== 'VERIFIED') {
@@ -87,43 +102,77 @@ export function App() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h2>randomcams</h2>
-      <div style={{ float: 'right' }}>
-        <button onClick={logout}>Log out</button>{' '}
-        <button onClick={handleLogoutEverywhere}>Log out everywhere</button>
-      </div>
-
-      {matchState.phase === 'idle' && (
-        <div>
-          <GenderFilterSelect value={seekingGenders} onChange={setSeekingGenders} />
-          <button
-            disabled={seekingGenders.length === 0}
-            onClick={() => socket?.emit('joinQueue', { seekingGenders })}
-          >
-            Start
+    <div className="min-h-screen">
+      <header className="mx-auto flex max-w-2xl items-center justify-between px-4 pt-8">
+        <div className="flex items-center gap-2.5">
+          <Logo size={32} />
+          <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">randomcams</span>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={logout} className="btn-secondary !px-4 !py-2 text-xs">
+            Log out
+          </button>
+          <button onClick={handleLogoutEverywhere} className="btn-secondary !px-4 !py-2 text-xs">
+            Log out everywhere
           </button>
         </div>
-      )}
+      </header>
 
-      {matchState.phase === 'waiting' && <p>Waiting for a match…</p>}
+      <main className="mx-auto max-w-2xl px-4 py-10">
+        {matchState.phase === 'idle' && (
+          <div className="card p-8">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Ready when you are</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Pick who you'd like to meet, then start.
+            </p>
+            <div className="mt-5">
+              <GenderFilterSelect value={seekingGenders} onChange={setSeekingGenders} />
+            </div>
+            <button
+              disabled={seekingGenders.length === 0}
+              onClick={() => socket?.emit('joinQueue', { seekingGenders })}
+              className="btn-primary mt-6 w-full sm:w-auto"
+            >
+              Start
+            </button>
+          </div>
+        )}
 
-      {matchState.phase === 'matched' && (
-        <div>
-          <p>Matched with {matchState.peer.displayName}</p>
-          <VideoChat localStream={localStream} remoteStream={remoteStream} />
-          <ReportButton socket={socket} sessionId={matchState.sessionId} reportedUserId={matchState.peer.id} />
-          <br />
-          <button
-            onClick={() => {
-              socket?.emit('leaveSession', { sessionId: matchState.sessionId });
-              setMatchState({ phase: 'idle' });
-            }}
-          >
-            Next / Leave
-          </button>
-        </div>
-      )}
+        {matchState.phase === 'waiting' && (
+          <div className="card flex flex-col items-center gap-4 p-12 text-center">
+            <Spinner />
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Waiting for a match…</p>
+          </div>
+        )}
+
+        {matchState.phase === 'matched' && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" /> Connected
+              </span>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Matched with {matchState.peer.displayName}
+              </p>
+            </div>
+
+            <VideoChat localStream={localStream} remoteStream={remoteStream} />
+
+            <div className="flex items-center justify-between">
+              <ReportButton socket={socket} sessionId={matchState.sessionId} reportedUserId={matchState.peer.id} />
+              <button
+                onClick={() => {
+                  socket?.emit('leaveSession', { sessionId: matchState.sessionId });
+                  setMatchState({ phase: 'idle' });
+                }}
+                className="btn-danger"
+              >
+                Next / Leave
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

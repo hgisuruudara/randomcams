@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ModerationReportView, listPendingReports, resolveReport } from '../api/rest';
+import { Logo } from './Logo';
 
 const ADMIN_TOKEN_STORAGE_KEY = 'randomcams_admin_token';
 
@@ -9,6 +10,11 @@ const REASON_LABELS: Record<string, string> = {
   HARASSMENT: 'Harassment or abuse',
   SCAM_OR_SOLICITATION: 'Scam or solicitation',
   OTHER: 'Other',
+};
+
+const REASON_COLORS: Record<string, string> = {
+  SUSPECTED_MINOR: 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300',
+  NUDITY_OR_SEXUAL_CONTENT_WITHOUT_CONSENT: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
 };
 
 export function AdminPanel() {
@@ -47,50 +53,86 @@ export function AdminPanel() {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h2>Moderation queue</h2>
-      <p style={{ fontSize: 12, color: '#666' }}>
-        Reports here have NOT resulted in any account action yet. Review each one and choose
-        Take action (bans the reported user) or Dismiss.
-      </p>
+    <div className="mx-auto max-w-3xl px-4 py-10">
+      <div className="mb-6 flex items-center gap-3">
+        <Logo size={36} />
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Moderation queue</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Reports here have <strong>not</strong> resulted in any account action yet.
+          </p>
+        </div>
+      </div>
 
-      <form onSubmit={handleTokenSubmit}>
+      <form onSubmit={handleTokenSubmit} className="card mb-6 flex flex-wrap gap-3 p-5">
         <input
           type="password"
           placeholder="Admin token"
           value={adminToken}
           onChange={(e) => setAdminToken(e.target.value)}
+          className="input flex-1"
+          style={{ minWidth: 180 }}
         />
         <input
           placeholder="Your name (for the audit trail)"
           value={reviewerLabel}
           onChange={(e) => setReviewerLabel(e.target.value)}
+          className="input flex-1"
+          style={{ minWidth: 180 }}
         />
-        <button type="submit">Load reports</button>
+        <button type="submit" className="btn-primary">
+          Load reports
+        </button>
       </form>
 
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      {error && (
+        <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">
+          {error}
+        </p>
+      )}
 
-      {reports && reports.length === 0 && <p>No pending reports.</p>}
-
-      {reports?.map((report) => (
-        <div key={report.id} style={{ border: '1px solid #ccc', borderRadius: 8, padding: 16, margin: '12px 0' }}>
-          <p>
-            <strong>{REASON_LABELS[report.reason] ?? report.reason}</strong>
-            {report.note && <> — "{report.note}"</>}
-          </p>
-          <p style={{ fontSize: 13 }}>
-            Reported: {report.reportedUser.displayName} ({report.reportedUser.email},{' '}
-            {report.reportedUser.verifiedGender ?? 'unverified'})
-            <br />
-            Reporter: {report.reporter.displayName} ({report.reporter.email})
-            <br />
-            Session: {report.sessionId} · Filed {new Date(report.createdAt).toLocaleString()}
-          </p>
-          <button onClick={() => handleResolve(report.id, 'ACTION_TAKEN')}>Take action (ban)</button>{' '}
-          <button onClick={() => handleResolve(report.id, 'DISMISSED')}>Dismiss</button>
+      {reports && reports.length === 0 && (
+        <div className="card p-10 text-center text-sm text-slate-400 dark:text-slate-500">
+          No pending reports. 🎉
         </div>
-      ))}
+      )}
+
+      <div className="space-y-4">
+        {reports?.map((report) => (
+          <div key={report.id} className="card p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`badge ${REASON_COLORS[report.reason] ?? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
+                {REASON_LABELS[report.reason] ?? report.reason}
+              </span>
+              {report.note && <span className="text-sm italic text-slate-500 dark:text-slate-400">"{report.note}"</span>}
+            </div>
+
+            <div className="mt-3 grid gap-1 text-sm text-slate-600 dark:text-slate-300">
+              <p>
+                <span className="font-semibold text-slate-800 dark:text-slate-100">Reported:</span>{' '}
+                {report.reportedUser.displayName} ({report.reportedUser.email},{' '}
+                {report.reportedUser.verifiedGender ?? 'unverified'})
+              </p>
+              <p>
+                <span className="font-semibold text-slate-800 dark:text-slate-100">Reporter:</span>{' '}
+                {report.reporter.displayName} ({report.reporter.email})
+              </p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Session {report.sessionId} · Filed {new Date(report.createdAt).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <button onClick={() => handleResolve(report.id, 'ACTION_TAKEN')} className="btn-danger !px-4 !py-2 text-xs">
+                Take action (ban)
+              </button>
+              <button onClick={() => handleResolve(report.id, 'DISMISSED')} className="btn-secondary !px-4 !py-2 text-xs">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -15,5 +15,24 @@ services:
     ports:
       - '6379:6379'
 
+  # Optional - only needed to test real TURN relay behavior. Two browser tabs
+  # on the same machine (the normal local dev setup) connect fine over STUN
+  # alone, so you generally won't need this running locally. It matters for
+  # a real deployment, where TURN_URL/credentials below must point at a
+  # server with a public IP, not this container - coturn behind NAT doesn't
+  # work as a TURN relay for other NATed clients.
+  coturn:
+    image: coturn/coturn:4.6
+    command:
+      - --lt-cred-mech
+      - --user=randomcams:randomcams
+      - --realm=randomcams.local
+      - --no-cli
+      - --listening-port=3478
+    ports:
+      - '3478:3478/udp'
+      - '3478:3478/tcp'
+      - '49160-49200:49160-49200/udp'
+
 volumes:
   postgres_data:

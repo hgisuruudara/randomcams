@@ -3,24 +3,38 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../db';
 import { signAuthToken } from './jwt';
 import { verifyGoogleIdToken } from './google';
+import { authRateLimiter } from './rateLimit';
 
 const MIN_PASSWORD_LENGTH = 8;
+const MAX_DISPLAY_NAME_LENGTH = 60;
+// Deliberately simple (structural sanity check, not full RFC 5322
+// compliance) — the real check that an address is reachable is the account
+// being usable at all, not a stricter regex.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
 
 export function authRouter(): Router {
   const router = Router();
+  router.use(authRateLimiter);
 
   router.post('/signup', express.json(), async (req, res) => {
-    const { email, password, displayName } = req.body as {
-      email?: string;
-      password?: string;
-      displayName?: string;
-    };
+    const { password, displayName } = req.body as { password?: string; displayName?: string };
+    const email = typeof req.body.email === 'string' ? normalizeEmail(req.body.email) : undefined;
 
     if (!email || !password || !displayName) {
       return res.status(400).json({ error: 'email, password, and displayName are required' });
     }
+    if (!EMAIL_RE.test(email)) {
+      return res.status(400).json({ error: 'invalid email address' });
+    }
     if (password.length < MIN_PASSWORD_LENGTH) {
       return res.status(400).json({ error: `password must be at least ${MIN_PASSWORD_LENGTH} characters` });
+    }
+    if (displayName.trim().length === 0 || displayName.length > MAX_DISPLAY_NAME_LENGTH) {
+      return res.status(400).json({ error: `displayName must be 1-${MAX_DISPLAY_NAME_LENGTH} characters` });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -30,7 +44,7 @@ export function authRouter(): Router {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { email, passwordHash, displayName },
+      data: { email, passwordHash, displayName: displayName.trim() },
     });
 
     const token = signAuthToken({ userId: user.id });
@@ -38,7 +52,8 @@ export function authRouter(): Router {
   });
 
   router.post('/login', express.json(), async (req, res) => {
-    const { email, password } = req.body as { email?: string; password?: string };
+    const { password } = req.body as { password?: string };
+    const email = typeof req.body.email === 'string' ? normalizeEmail(req.body.email) : undefined;
     if (!email || !password) {
       return res.status(400).json({ error: 'email and password are required' });
     }

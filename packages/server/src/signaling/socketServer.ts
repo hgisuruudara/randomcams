@@ -30,6 +30,8 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
   const socketState = new Map<string, SocketState>();
   // socketId -> sessionId, so relay handlers know where to send offer/answer/ICE
   const socketToSession = new Map<string, string>();
+  const lastReportAt = new Map<string, number>();
+  const REPORT_COOLDOWN_MS = 5000;
 
   io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
     void (async () => {
@@ -156,6 +158,25 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
 
       socket.on('report', ({ sessionId, reportedUserId, reason, note }) => {
         void (async () => {
+          if (socketToSession.get(socket.id) !== sessionId) {
+            socket.emit('errorMessage', { message: 'you are not part of that session' });
+            return;
+          }
+
+          const last = lastReportAt.get(user.id) ?? 0;
+          if (Date.now() - last < REPORT_COOLDOWN_MS) {
+            socket.emit('errorMessage', { message: 'please wait before submitting another report' });
+            return;
+          }
+
+          const session = await prisma.chatSession.findUnique({ where: { id: sessionId } });
+          const peerId = session?.userAId === user.id ? session.userBId : session?.userAId;
+          if (!session || peerId !== reportedUserId) {
+            socket.emit('errorMessage', { message: 'reportedUserId does not match this session' });
+            return;
+          }
+
+          lastReportAt.set(user.id, Date.now());
           const report = await createReport(user.id, { sessionId, reportedUserId, reason, note });
           socket.emit('reportAcknowledged', { reportId: report.id });
         })();

@@ -11,7 +11,7 @@ export async function createTestUser(overrides: { displayName?: string; password
   const user = await prisma.user.create({
     data: { email, passwordHash, displayName: overrides.displayName ?? 'Test User' },
   });
-  return { user, email, password, token: signAuthToken({ userId: user.id }) };
+  return { user, email, password, token: signAuthToken({ userId: user.id, tokenVersion: user.tokenVersion }) };
 }
 
 export async function markVerified(userId: string, gender: Gender, birthdate = new Date('2000-01-01')) {

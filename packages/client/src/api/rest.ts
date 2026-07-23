@@ -37,6 +37,43 @@ export async function loginWithGoogle(idToken: string, acceptedTerms: boolean) {
   return body as { userId: string; token: string };
 }
 
+export async function requestPasswordReset(email: string) {
+  const res = await fetch(`${SERVER_URL}/auth/request-password-reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? 'request failed');
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  const res = await fetch(`${SERVER_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, newPassword }),
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error ?? 'reset failed');
+  return body as { userId: string; token: string };
+}
+
+export async function verifyEmail(token: string) {
+  const res = await fetch(`${SERVER_URL}/auth/verify-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? 'verification failed');
+}
+
+export async function logoutEverywhere(token: string) {
+  const res = await fetch(`${SERVER_URL}/auth/logout-everywhere`, {
+    method: 'POST',
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? 'failed to log out everywhere');
+}
+
 export async function getVerificationStatus(token: string) {
   const res = await fetch(`${SERVER_URL}/verification/status`, { headers: authHeaders(token) });
   if (!res.ok) throw new Error('failed to fetch verification status');

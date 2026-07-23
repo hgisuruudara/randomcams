@@ -2,20 +2,19 @@ import { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { PublicUser, VerifiedGender } from '@randomcams/shared';
 import { connectSocket } from './api/socket';
-import { getVerificationStatus } from './api/rest';
+import { getVerificationStatus, logoutEverywhere } from './api/rest';
 import { AuthForm } from './components/AuthForm';
 import { VerificationGate } from './components/VerificationGate';
 import { GenderFilterSelect } from './components/GenderFilterSelect';
 import { VideoChat } from './components/VideoChat';
 import { ReportButton } from './components/ReportButton';
 import { useWebRTC } from './hooks/useWebRTC';
+import { TOKEN_STORAGE_KEY } from './tokenStorage';
 
 type MatchState =
   | { phase: 'idle' }
   | { phase: 'waiting' }
   | { phase: 'matched'; sessionId: string; peer: PublicUser; initiator: boolean };
-
-const TOKEN_STORAGE_KEY = 'randomcams_token';
 
 export function App() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY));
@@ -34,6 +33,11 @@ export function App() {
     socket?.disconnect();
     setToken(null);
     setVerificationStatus(null);
+  }
+
+  async function handleLogoutEverywhere() {
+    if (token) await logoutEverywhere(token).catch(() => undefined);
+    logout();
   }
 
   useEffect(() => {
@@ -85,9 +89,10 @@ export function App() {
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', fontFamily: 'sans-serif' }}>
       <h2>randomcams</h2>
-      <button onClick={logout} style={{ float: 'right' }}>
-        Log out
-      </button>
+      <div style={{ float: 'right' }}>
+        <button onClick={logout}>Log out</button>{' '}
+        <button onClick={handleLogoutEverywhere}>Log out everywhere</button>
+      </div>
 
       {matchState.phase === 'idle' && (
         <div>

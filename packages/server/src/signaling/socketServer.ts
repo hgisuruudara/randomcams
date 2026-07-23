@@ -43,8 +43,11 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
       }
 
       let userId: string;
+      let tokenVersion: number;
       try {
-        userId = verifyAuthToken(token).userId;
+        const payload = verifyAuthToken(token);
+        userId = payload.userId;
+        tokenVersion = payload.tokenVersion;
       } catch {
         socket.emit('errorMessage', { message: 'invalid or expired token' });
         socket.disconnect(true);
@@ -54,6 +57,11 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user || user.banned) {
         socket.emit('errorMessage', { message: 'account unavailable' });
+        socket.disconnect(true);
+        return;
+      }
+      if (user.tokenVersion !== tokenVersion) {
+        socket.emit('errorMessage', { message: 'session has been revoked, please log in again' });
         socket.disconnect(true);
         return;
       }

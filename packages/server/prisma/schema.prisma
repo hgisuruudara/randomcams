@@ -64,6 +64,23 @@ model User {
   tosAcceptedAt      DateTime?
   tosVersion         String?
 
+  // Informational/security hygiene only - NOT a gate on using the app. The
+  // real "is this a real, age-verified adult" gate is verificationStatus
+  // above (KYC). Email verification just confirms the address is reachable,
+  // which password-reset delivery depends on.
+  emailVerifiedAt              DateTime?
+  emailVerificationTokenHash   String?
+  emailVerificationExpiresAt   DateTime?
+
+  passwordResetTokenHash   String?
+  passwordResetExpiresAt   DateTime?
+
+  // Bumped on password reset and on an explicit "log out everywhere"
+  // request. Included in every issued JWT; a mismatch against the current
+  // DB value means the token was issued before a revocation event and is
+  // rejected, even though the JWT signature itself is still valid.
+  tokenVersion       Int                @default(0)
+
   verificationRecords VerificationRecord[]
   reportsFiled        ModerationReport[] @relation("reporter")
   reportsReceived      ModerationReport[] @relation("reportedUser")

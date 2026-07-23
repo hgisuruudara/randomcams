@@ -194,6 +194,23 @@ immediately; "Dismiss" closes the report with no action. Both are recorded with 
 (a free-text name for the audit trail — the actual access control is the shared token, not this
 field).
 
+## Account management
+
+- **Email verification** is informational/security hygiene only — it is *not* a gate on using the
+  app (the KYC flow is the real gate). Signup sends a verification email (via the console-logging
+  mock mailer in `src/mailer` locally — swap in a real provider, e.g. SES/Postmark, before
+  deploying) with a link to `/verify-email?token=...`.
+- **Password reset**: "Forgot password?" on the login screen → `/auth/request-password-reset`
+  (always responds success regardless of whether the email exists, so it can't be used to
+  enumerate accounts) → emails a link to `/reset-password?token=...`, valid for 1 hour.
+  Completing a reset invalidates every other session on the account (see token revocation below).
+- **Token revocation**: every JWT carries a `tokenVersion` that must match the user's current
+  value in the DB, checked on every authenticated request (`requireAuth` middleware and the
+  socket handshake both do this). A password reset or hitting "Log out everywhere" bumps
+  `tokenVersion`, which immediately invalidates every outstanding token for that account — a ban
+  also takes effect immediately for the same reason, rather than waiting out the JWT's 30-day
+  expiry.
+
 ## Automated tests & CI
 
 ```bash

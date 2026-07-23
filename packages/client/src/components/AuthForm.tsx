@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { login, loginWithGoogle, signup } from '../api/rest';
+import { login, loginWithGoogle, requestPasswordReset, signup } from '../api/rest';
 import { GoogleSignInButton } from './GoogleSignInButton';
 
 export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId: string; token: string }) => void }) {
-  const [mode, setMode] = useState<'login' | 'signup'>('signup');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -19,6 +20,20 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
       const result =
         mode === 'signup' ? await signup(email, password, displayName, acceptedTerms) : await login(email, password);
       onAuthenticated(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function submitForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      await requestPasswordReset(email);
+      setForgotSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'something went wrong');
     } finally {
@@ -37,6 +52,33 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
   }
 
   const canSubmit = mode === 'login' || acceptedTerms;
+
+  if (mode === 'forgot') {
+    return (
+      <div style={{ maxWidth: 360, margin: '80px auto', fontFamily: 'sans-serif' }}>
+        <h2>Reset your password</h2>
+        {forgotSent ? (
+          <p>If an account exists for that email, a reset link has been sent.</p>
+        ) : (
+          <form onSubmit={submitForgot}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <br />
+            <button type="submit" disabled={loading}>
+              Send reset link
+            </button>
+          </form>
+        )}
+        {error && <p style={{ color: 'crimson' }}>{error}</p>}
+        <button onClick={() => setMode('login')}>Back to log in</button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 360, margin: '80px auto', fontFamily: 'sans-serif' }}>
@@ -101,6 +143,7 @@ export function AuthForm({ onAuthenticated }: { onAuthenticated: (auth: { userId
       <button onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}>
         {mode === 'signup' ? 'Already have an account? Log in' : "Need an account? Sign up"}
       </button>
+      {mode === 'login' && <button onClick={() => setMode('forgot')}>Forgot password?</button>}
 
       <p style={{ textAlign: 'center', margin: '16px 0' }}>or</p>
       {mode === 'signup' && !acceptedTerms ? (

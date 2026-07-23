@@ -5,6 +5,9 @@ import { prisma } from '../db';
 import { signAuthToken } from './jwt';
 import { verifyGoogleIdToken } from './google';
 import { createAuthRateLimiter } from './rateLimit';
+import { requireAuth } from './middleware';
+import { generateToken, hashToken } from './tokens';
+import { getMailer } from '../mailer';
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_DISPLAY_NAME_LENGTH = 60;
@@ -13,8 +16,25 @@ const MAX_DISPLAY_NAME_LENGTH = 60;
 // being usable at all, not a stricter regex.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173';
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+async function sendVerificationEmail(userId: string, email: string) {
+  const token = generateToken();
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      emailVerificationTokenHash: hashToken(token),
+      emailVerificationExpiresAt: new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS),
+    },
+  });
+  const link = `${CLIENT_ORIGIN}/verify-email?token=${token}`;
+  await getMailer().send(email, 'Verify your email', `Confirm your email address: ${link}`);
 }
 
 export function authRouter(): Router {
@@ -61,7 +81,9 @@ export function authRouter(): Router {
       },
     });
 
-    const token = signAuthToken({ userId: user.id });
+    await sendVerificationEmail(user.id, user.email).catch(() => undefined);
+
+    const token = signAuthToken({ userId: user.id, tokenVersion: user.tokenVersion });
     res.status(201).json({ userId: user.id, token });
   });
 
@@ -87,7 +109,7 @@ export function authRouter(): Router {
       return res.status(403).json({ error: 'account suspended' });
     }
 
-    const token = signAuthToken({ userId: user.id });
+    const token = signAuthToken({ userId: user.id, tokenVersion: user.tokenVersion });
     res.json({ userId: user.id, token });
   });
 
@@ -129,6 +151,8 @@ export function authRouter(): Router {
             displayName: identity.displayName,
             tosAcceptedAt: new Date(),
             tosVersion: CURRENT_TOS_VERSION,
+            // Google already verified this address to sign the user in.
+            emailVerifiedAt: new Date(),
           },
         });
       }
@@ -138,8 +162,91 @@ export function authRouter(): Router {
       return res.status(403).json({ error: 'account suspended' });
     }
 
-    const token = signAuthToken({ userId: user.id });
+    const token = signAuthToken({ userId: user.id, tokenVersion: user.tokenVersion });
     res.json({ userId: user.id, token });
+  });
+
+  // Informational/security hygiene only - does not gate app usage. See the
+  // comment on User.emailVerifiedAt in schema.prisma.
+  router.post('/verify-email', express.json(), async (req, res) => {
+    const { token } = req.body as { token?: string };
+    if (!token) return res.status(400).json({ error: 'token is required' });
+
+    const user = await prisma.user.findFirst({ where: { emailVerificationTokenHash: hashToken(token) } });
+    if (!user || !user.emailVerificationExpiresAt || user.emailVerificationExpiresAt < new Date()) {
+      return res.status(400).json({ error: 'invalid or expired verification link' });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date(), emailVerificationTokenHash: null, emailVerificationExpiresAt: null },
+    });
+    res.json({ ok: true });
+  });
+
+  // Always responds the same way regardless of whether the email exists,
+  // so this endpoint can't be used to enumerate registered accounts.
+  router.post('/request-password-reset', express.json(), async (req, res) => {
+    const email = typeof req.body.email === 'string' ? normalizeEmail(req.body.email) : undefined;
+    if (!email) return res.status(400).json({ error: 'email is required' });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      const token = generateToken();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordResetTokenHash: hashToken(token),
+          passwordResetExpiresAt: new Date(Date.now() + PASSWORD_RESET_TTL_MS),
+        },
+      });
+      const link = `${CLIENT_ORIGIN}/reset-password?token=${token}`;
+      await getMailer()
+        .send(email, 'Reset your password', `Reset your password: ${link}\nThis link expires in 1 hour.`)
+        .catch(() => undefined);
+    }
+
+    res.json({ ok: true });
+  });
+
+  router.post('/reset-password', express.json(), async (req, res) => {
+    const { token, newPassword } = req.body as { token?: string; newPassword?: string };
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'token and newPassword are required' });
+    }
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `newPassword must be at least ${MIN_PASSWORD_LENGTH} characters` });
+    }
+
+    const user = await prisma.user.findFirst({ where: { passwordResetTokenHash: hashToken(token) } });
+    if (!user || !user.passwordResetExpiresAt || user.passwordResetExpiresAt < new Date()) {
+      return res.status(400).json({ error: 'invalid or expired reset link' });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetTokenHash: null,
+        passwordResetExpiresAt: null,
+        // Invalidate every outstanding session - if someone else had access
+        // to the account, a password reset should actually lock them out,
+        // not just the person doing the reset.
+        tokenVersion: { increment: 1 },
+      },
+    });
+
+    const newToken = signAuthToken({ userId: updated.id, tokenVersion: updated.tokenVersion });
+    res.json({ userId: updated.id, token: newToken });
+  });
+
+  // Bumps tokenVersion, which invalidates every JWT issued before this call
+  // - including the one used to authenticate this very request. That's
+  // intentional: "log out everywhere" means everywhere.
+  router.post('/logout-everywhere', requireAuth, async (req, res) => {
+    await prisma.user.update({ where: { id: req.userId! }, data: { tokenVersion: { increment: 1 } } });
+    res.json({ ok: true });
   });
 
   return router;

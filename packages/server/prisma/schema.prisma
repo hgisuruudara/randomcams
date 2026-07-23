@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ModerationReportReason {
+  NUDITY_OR_SEXUAL_CONTENT_WITHOUT_CONSENT
+  SUSPECTED_MINOR
+  HARASSMENT
+  SCAM_OR_SOLICITATION
+  OTHER
+}
+
+enum ModerationReportStatus {
+  // Default queue for anything a user reports. A human reviews these before
+  // any account action is taken.
+  PENDING_REVIEW
+  // Reserved for the automated CSAM-classifier path (see moderation/csamHook.ts).
+  // These bypass human review entirely: auto-suspend + mandatory report, no delay.
+  ESCALATED_AUTOMATIC
+  ACTION_TAKEN
+  DISMISSED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  passwordHash      String
+  displayName       String
+  createdAt         DateTime           @default(now())
+  banned            Boolean            @default(false)
+  bannedAt          DateTime?
+
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  verifiedGender     Gender?
+  // Raw DOB is sensitive PII kept only for compliance (age re-checks, legal
+  // record-keeping). Encrypt at rest / restrict access in production.
+  verifiedBirthdate  DateTime?
+
+  verificationRecords VerificationRecord[]
+  reportsFiled        ModerationReport[] @relation("reporter")
+  reportsReceived      ModerationReport[] @relation("reportedUser")
+  sessionsAsA         ChatSession[]      @relation("sessionUserA")
+  sessionsAsB         ChatSession[]      @relation("sessionUserB")
+}
+
+model VerificationRecord {
+  id                 String             @id @default(cuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id])
+  provider           String
+  providerReference  String
+  status             VerificationStatus
+  extractedGender    Gender?
+  extractedBirthdate DateTime?
+  createdAt          DateTime           @default(now())
+
+  @@index([userId])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userAId   String
+  userA     User     @relation("sessionUserA", fields: [userAId], references: [id])
+  userBId   String
+  userB     User     @relation("sessionUserB", fields: [userBId], references: [id])
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+
+  reports ModerationReport[]
+
+  @@index([userAId])
+  @@index([userBId])
+}
+
+model ModerationReport {
+  id             String                  @id @default(cuid())
+  sessionId      String
+  session        ChatSession             @relation(fields: [sessionId], references: [id])
+  reporterId     String
+  reporter       User                    @relation("reporter", fields: [reporterId], references: [id])
+  reportedUserId String
+  reportedUser   User                    @relation("reportedUser", fields: [reportedUserId], references: [id])
+  reason         ModerationReportReason
+  note           String?
+  status         ModerationReportStatus  @default(PENDING_REVIEW)
+  // Pointer to evidence (clip/screenshot) in secure storage — never store
+  // raw media in the primary DB.
+  evidenceRef    String?
+  reviewedByAdminId String?
+  reviewedAt     DateTime?
+  createdAt      DateTime                @default(now())
+
+  @@index([reportedUserId])
+  @@index([status])
+}

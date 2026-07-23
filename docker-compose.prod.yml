@@ -1,0 +1,109 @@
+# Production compose file. This is one deployment option (self-hosted,
+# single-machine) among several reasonable ones - a managed Postgres (RDS,
+# Supabase, ...) and managed Redis (Upstash, ElastiCache, ...) instead of the
+# postgres/redis services below is equally valid and arguably lower-ops.
+#
+# Secrets belong in a real .env.production file (untracked - see
+# .env.production.example), never committed or hardcoded here.
+#
+# Not built/tested in this repo's dev sandbox - its network policy blocks
+# pulling base images from Docker Hub. Validate `docker compose -f
+# docker-compose.prod.yml build` and a full `up` in an environment with
+# normal registry access before relying on this.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: packages/server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      KYC_PROVIDER: ${KYC_PROVIDER:-mock}
+      KYC_API_KEY: ${KYC_API_KEY}
+      KYC_WEBHOOK_SECRET: ${KYC_WEBHOOK_SECRET}
+
+  client:
+    build:
+      context: .
+      dockerfile: packages/client/Dockerfile
+      args:
+        VITE_SERVER_URL: ${CLIENT_ORIGIN}
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+        VITE_TURN_URL: ${TURN_URL}
+        VITE_TURN_USERNAME: ${TURN_USERNAME}
+        VITE_TURN_CREDENTIAL: ${TURN_CREDENTIAL}
+    restart: unless-stopped
+    depends_on:
+      - server
+
+  edge:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - client
+      - server
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./deploy/nginx/edge.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+
+  # Real TURN deployment needs to run wherever it has a genuinely public IP
+  # (not behind another NAT) and a real, rotated static-auth-secret - do not
+  # reuse the demo credential from the dev docker-compose.yml.
+  coturn:
+    image: coturn/coturn:4.6
+    restart: unless-stopped
+    command:
+      - --lt-cred-mech
+      - --user=${TURN_USERNAME}:${TURN_CREDENTIAL}
+      - --realm=${TURN_REALM}
+      - --no-cli
+      - --listening-port=3478
+    ports:
+      - '3478:3478/udp'
+      - '3478:3478/tcp'
+      - '49160-49200:49160-49200/udp'
+
+volumes:
+  postgres_data:
+  certbot_conf:
+  certbot_www:

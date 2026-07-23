@@ -1,6 +1,7 @@
 import { ModerationReportReason as PrismaReason } from '@prisma/client';
 import { ModerationReportInput } from '@randomcams/shared';
 import { prisma } from '../db';
+import { logger } from '../logger';
 
 function toPrismaReason(reason: ModerationReportInput['reason']): PrismaReason {
   switch (reason) {
@@ -48,8 +49,10 @@ export async function createReport(reporterId: string, input: ModerationReportIn
     // TODO: route this to whatever urgent-review process + legal reporting
     // obligation (e.g. NCMEC CyberTipline in the US) your compliance counsel
     // sets up. Do not let this just sit as a DB row.
-    // eslint-disable-next-line no-console
-    console.warn(`[URGENT] suspected_minor report ${report.id} — reported user auto-suspended pending review`);
+    logger.warn(
+      { reportId: report.id, reportedUserId: input.reportedUserId },
+      'URGENT: suspected_minor report - reported user auto-suspended pending review'
+    );
   }
 
   return report;

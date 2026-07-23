@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import Redis from 'ioredis';
 import { createApp } from './app';
 import { createSocketServer } from './signaling/socketServer';
+import { logger } from './logger';
 
 const app = createApp();
 const httpServer = createServer(app);
@@ -11,6 +12,5 @@ createSocketServer(httpServer, redis);
 
 const port = Number(process.env.PORT ?? 4000);
 httpServer.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`server listening on :${port}`);
+  logger.info({ port }, 'server listening');
 });

@@ -23,6 +23,7 @@ deliberately left unfinished with notes on why.
 - [TURN server](#turn-server)
 - [Admin moderation panel](#admin-moderation-panel)
 - [Automated tests & CI](#automated-tests--ci)
+- [Production deployment](#production-deployment)
 - [Branching](#branching)
 - [Production readiness checklist](#production-readiness-checklist)
 
@@ -229,6 +230,40 @@ CI (`.github/workflows/ci.yml`) runs on every push and PR: spins up Postgres + R
 containers, installs deps, generates the Prisma client, applies migrations, builds all three
 packages, typechecks, and runs the full test suite.
 
+## Production deployment
+
+Dockerfiles for both `packages/server` and `packages/client` (multi-stage, non-root runtime
+images with `HEALTHCHECK`s), a `docker-compose.prod.yml` wiring them up with Postgres/Redis/coturn
+behind an nginx edge proxy (`deploy/nginx/edge.conf`), and `.env.production.example` for the
+required secrets.
+
+**Important caveat:** these were written using standard, well-established patterns and the
+compose file's syntax/variable interpolation was validated (`docker compose config`), but the
+actual image builds were **not** executed end-to-end — this repo's sandbox has an egress policy
+that blocks pulling base images from Docker Hub's registry CDN, so `docker build` fails here with
+a 403 before it can even start. Validate a real `docker compose -f docker-compose.prod.yml build`
+and `up` in an environment with normal registry access before relying on this for an actual
+deployment.
+
+```bash
+cp .env.production.example .env.production
+# fill in real secrets, then:
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+```
+
+Architecture: one public domain, terminated at the `edge` nginx container, which serves the
+client's static build directly and reverse-proxies `/auth`, `/verification`, `/admin`,
+`/socket.io`, and `/health` to the server container — client and API share an origin this way,
+so `VITE_SERVER_URL` at build time is just the public domain itself. TLS certs aren't provisioned
+by this config (the edge conf assumes they already exist at the paths it references); wire up
+certbot or your own cert management separately.
+
+Structured logging: the server uses `pino` (`src/logger.ts`) with `pino-http` request logging
+(`/health` excluded from the noise); pretty-printed in development, JSON in production
+(`NODE_ENV=production`) for log aggregation. Set `LOG_LEVEL` to control verbosity (tests default
+it to `silent`).
+
 ## Branching
 
 - `dev_izzy` — active development branch.
@@ -254,10 +289,14 @@ Things this codebase deliberately does **not** solve yet:
   businesses; budget for an adult-industry-specific processor (CCBill, Segpay, Epoch) or crypto.
 - **Hosting compliance.** AWS/GCP/Azure all have acceptable-use policies around adult content —
   read them before choosing a host.
-- **HTTPS/WSS in production.** Local dev runs plain HTTP/WS; a real deployment needs TLS
-  terminated somewhere in front of both the API and Socket.IO connections.
+- **HTTPS/WSS in production.** The edge nginx config (`deploy/nginx/edge.conf`) routes both the
+  API and Socket.IO through TLS, but it assumes certs already exist at the paths it references —
+  certbot/cert provisioning and renewal aren't wired up. Also see the caveat under
+  [Production deployment](#production-deployment): none of the Dockerfiles/compose have been
+  build-tested end-to-end in this repo's sandbox.
 - **A real TURN deployment** with a public IP and proper credential rotation (the coturn service
-  here is for local testing only, using a static demo credential).
+  in `docker-compose.prod.yml` still needs a real, rotated `TURN_CREDENTIAL` — never reuse the
+  demo one from the dev `docker-compose.yml`).
 - **Rate limiting is IP-based and in-memory** (`express-rate-limit` defaults) — fine for a single
   server, but needs a shared store (e.g. Redis) behind a load balancer, and `app.set('trust
   proxy', ...)` configured correctly or every request behind a proxy shares one IP.

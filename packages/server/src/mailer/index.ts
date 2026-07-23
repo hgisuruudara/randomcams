@@ -1,3 +1,5 @@
+import { logger } from '../logger';
+
 export interface Mailer {
   send(to: string, subject: string, body: string): Promise<void>;
 }
@@ -8,8 +10,7 @@ export interface Mailer {
 // arrives.
 class ConsoleMailer implements Mailer {
   async send(to: string, subject: string, body: string): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log(`[mailer] to=${to} subject="${subject}"\n${body}`);
+    logger.info({ to, subject, body }, 'mailer: would send email');
   }
 }
 

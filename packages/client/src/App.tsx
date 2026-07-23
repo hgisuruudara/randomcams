@@ -13,6 +13,7 @@ import { CameraSetup } from './components/CameraSetup';
 import { CallControls } from './components/CallControls';
 import { useWebRTC } from './hooks/useWebRTC';
 import { useMediaDevices } from './hooks/useMediaDevices';
+import { useIceServers } from './hooks/useIceServers';
 import { TOKEN_STORAGE_KEY } from './tokenStorage';
 
 type MatchState =
@@ -77,11 +78,13 @@ export function App() {
     };
   }, [token, verificationStatus]);
 
+  const iceServers = useIceServers(token);
   const { remoteStream, replaceTrack } = useWebRTC(
     socket,
     matchState.phase === 'matched' ? matchState.sessionId : null,
     matchState.phase === 'matched' ? matchState.initiator : false,
-    media.stream
+    media.stream,
+    iceServers
   );
 
   if (!token) {

@@ -18,14 +18,17 @@ services:
   # Optional - only needed to test real TURN relay behavior. Two browser tabs
   # on the same machine (the normal local dev setup) connect fine over STUN
   # alone, so you generally won't need this running locally. It matters for
-  # a real deployment, where TURN_URL/credentials below must point at a
-  # server with a public IP, not this container - coturn behind NAT doesn't
-  # work as a TURN relay for other NATed clients.
+  # a real deployment, where TURN_SECRET/TURN_URLS (server .env) must point
+  # at a server with a public IP, not this container - coturn behind NAT
+  # doesn't work as a TURN relay for other NATed clients. Uses the same
+  # --use-auth-secret REST API mode as production (see
+  # packages/server/src/webrtc/turnCredentials.ts) so local testing
+  # exercises the real credential-minting path, not a shortcut.
   coturn:
     image: coturn/coturn:4.6
     command:
-      - --lt-cred-mech
-      - --user=randomcams:randomcams
+      - --use-auth-secret
+      - --static-auth-secret=devsecret-do-not-use-in-prod
       - --realm=randomcams.local
       - --no-cli
       - --listening-port=3478

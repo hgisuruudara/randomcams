@@ -4,6 +4,7 @@ import pinoHttp from 'pino-http';
 import { authRouter } from './auth/routes';
 import { verificationRouter } from './verification/routes';
 import { moderationAdminRouter } from './moderation/adminRoutes';
+import { webrtcRouter } from './webrtc/routes';
 import { logger } from './logger';
 
 // Builds the Express app without binding a port, so tests can drive it
@@ -17,6 +18,7 @@ export function createApp(): Express {
   app.use('/auth', authRouter());
   app.use('/verification', verificationRouter());
   app.use('/admin/moderation', moderationAdminRouter());
+  app.use('/webrtc', webrtcRouter());
 
   return app;
 }

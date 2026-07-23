@@ -4,37 +4,22 @@ import { ClientToServerEvents, ServerToClientEvents } from '@randomcams/shared';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
-// Public STUN always included as a fallback. A TURN server (e.g. coturn,
-// see docker-compose.yml) matters in practice — a large fraction of
-// real-world connections sit behind NATs/firewalls that STUN alone can't
-// traverse — so it's added from env when configured rather than hardcoded,
-// since TURN credentials differ per deployment.
-function buildIceServers(): RTCIceServer[] {
-  const servers: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }];
-
-  const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
-  const turnUsername = import.meta.env.VITE_TURN_USERNAME as string | undefined;
-  const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL as string | undefined;
-  if (turnUrl) {
-    servers.push({ urls: turnUrl, username: turnUsername, credential: turnCredential });
-  }
-
-  return servers;
-}
-
-const ICE_SERVERS = buildIceServers();
-
 // The camera/mic stream is owned by useMediaDevices (so it persists across
 // the lobby preview and the call itself) and passed in rather than acquired
 // here. sessionId/initiator are the only things that should tear down and
 // recreate the peer connection - a camera/mic device swap mutates the same
 // stream's tracks in place and goes through replaceTrack() below instead,
 // so switching cameras mid-call doesn't cause a full renegotiation.
+//
+// iceServers comes from useIceServers, which fetches time-limited TURN
+// credentials from the server per session rather than this hook holding a
+// static build-time TURN config.
 export function useWebRTC(
   socket: Socket | null,
   sessionId: string | null,
   initiator: boolean,
-  localStream: MediaStream | null
+  localStream: MediaStream | null,
+  iceServers: RTCIceServer[]
 ) {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -43,7 +28,7 @@ export function useWebRTC(
     if (!socket || !sessionId || !localStream) return;
 
     const appSocket = socket as AppSocket;
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({ iceServers });
     pcRef.current = pc;
 
     localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));

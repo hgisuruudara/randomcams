@@ -23,7 +23,8 @@ deliberately left unfinished with notes on why.
 - [TURN server](#turn-server)
 - [Admin moderation panel](#admin-moderation-panel)
 - [Automated tests & CI](#automated-tests--ci)
-- [Production deployment](#production-deployment)
+- [Production deployment](#production-deployment) — see also [DEPLOYMENT.md](./DEPLOYMENT.md) for
+  a step-by-step runbook to a live public URL
 - [Branching](#branching)
 - [Production readiness checklist](#production-readiness-checklist)
 
@@ -168,24 +169,37 @@ Two browser tabs on the same machine connect fine over public STUN alone — you
 for basic local testing. It matters once real users behind restrictive NATs/firewalls (a
 meaningful fraction of any real deployment) try to connect to each other.
 
-`docker-compose.yml` includes an optional `coturn` service with a static demo credential
-(`randomcams:randomcams`) for testing the relay path locally:
+TURN credentials are never baked into the client build or shared as a single static
+username/password — the client would ship it to every visitor's browser (visible in
+`chrome://webrtc-internals` or the network tab) and it would work forever. Instead the server
+mints a fresh, time-limited credential per user session using coturn's REST API auth scheme
+(`--use-auth-secret`): `packages/server/src/webrtc/turnCredentials.ts` derives
+`username = "<expiry>:<userId>"` and `credential = base64(HMAC-SHA1(TURN_SECRET, username))`,
+served from the authenticated `GET /webrtc/turn-credentials`. The client
+(`src/hooks/useIceServers.ts`) fetches one when it has a token and refreshes it shortly before it
+expires (`TURN_CREDENTIAL_TTL_SECONDS`, default 6h). coturn independently recomputes the same HMAC
+to validate and rejects once the timestamp has passed, so a leaked credential stops working on its
+own instead of granting standing access to the relay.
+
+`docker-compose.yml` includes an optional `coturn` service already configured this way for local
+testing:
 
 ```bash
 docker compose up -d coturn
 ```
 
-Then in `packages/client/.env`:
+Then in `packages/server/.env` (already set to matching defaults):
 
 ```
-VITE_TURN_URL=turn:localhost:3478
-VITE_TURN_USERNAME=randomcams
-VITE_TURN_CREDENTIAL=randomcams
+TURN_SECRET=devsecret-do-not-use-in-prod
+TURN_URLS=turn:localhost:3478
 ```
 
 For an actual deployment, coturn (or a hosted TURN provider) needs to run on a server with a
 public IP — a coturn container behind your own NAT can't relay for other NATed clients, so this
-setup is for local relay-path testing only, not a deployment topology.
+setup is for local relay-path testing only, not a deployment topology. Generate a real
+`TURN_SECRET` with `openssl rand -hex 32` and set it identically in both the server's env and
+`docker-compose.prod.yml`'s coturn service — see `.env.production.example`.
 
 ## Admin moderation panel
 
@@ -231,6 +245,9 @@ containers, installs deps, generates the Prisma client, applies migrations, buil
 packages, typechecks, and runs the full test suite.
 
 ## Production deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the ordered, step-by-step version of this section
+(host selection, DNS, TLS, TURN, and the business/legal gates that come after the infra is up).
 
 Dockerfiles for both `packages/server` and `packages/client` (multi-stage, non-root runtime
 images with `HEALTHCHECK`s), a `docker-compose.prod.yml` wiring them up with Postgres/Redis/coturn
@@ -294,9 +311,9 @@ Things this codebase deliberately does **not** solve yet:
   certbot/cert provisioning and renewal aren't wired up. Also see the caveat under
   [Production deployment](#production-deployment): none of the Dockerfiles/compose have been
   build-tested end-to-end in this repo's sandbox.
-- **A real TURN deployment** with a public IP and proper credential rotation (the coturn service
-  in `docker-compose.prod.yml` still needs a real, rotated `TURN_CREDENTIAL` — never reuse the
-  demo one from the dev `docker-compose.yml`).
+- **A real TURN deployment** with a public IP. Credential minting is already handled properly
+  (time-limited, per-user, HMAC-derived — see [TURN server](#turn-server)); what's still needed is
+  running coturn somewhere with a genuinely public IP and a real, non-demo `TURN_SECRET`.
 - **Rate limiting is IP-based and in-memory** (`express-rate-limit` defaults) — fine for a single
   server, but needs a shared store (e.g. Redis) behind a load balancer, and `app.set('trust
   proxy', ...)` configured correctly or every request behind a proxy shares one IP.

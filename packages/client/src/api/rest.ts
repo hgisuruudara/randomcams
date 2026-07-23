@@ -89,6 +89,22 @@ export async function startVerification(token: string) {
   return res.json() as Promise<{ redirectUrl: string }>;
 }
 
+export interface TurnCredentials {
+  urls: string[];
+  username: string;
+  credential: string;
+  ttlSeconds: number;
+}
+
+// Returns null when the server has no TURN_SECRET/TURN_URLS configured
+// (e.g. plain local dev) so callers can fall back to STUN-only.
+export async function getTurnCredentials(token: string): Promise<TurnCredentials | null> {
+  const res = await fetch(`${SERVER_URL}/webrtc/turn-credentials`, { headers: authHeaders(token) });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('failed to fetch TURN credentials');
+  return res.json();
+}
+
 export interface ReportUserSummary {
   id: string;
   email: string;

@@ -57,6 +57,8 @@ services:
       KYC_PROVIDER: ${KYC_PROVIDER:-mock}
       KYC_API_KEY: ${KYC_API_KEY}
       KYC_WEBHOOK_SECRET: ${KYC_WEBHOOK_SECRET}
+      TURN_SECRET: ${TURN_SECRET}
+      TURN_URLS: ${TURN_URLS}
 
   client:
     build:
@@ -65,9 +67,6 @@ services:
       args:
         VITE_SERVER_URL: ${CLIENT_ORIGIN}
         VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-        VITE_TURN_URL: ${TURN_URL}
-        VITE_TURN_USERNAME: ${TURN_USERNAME}
-        VITE_TURN_CREDENTIAL: ${TURN_CREDENTIAL}
     restart: unless-stopped
     depends_on:
       - server
@@ -87,14 +86,19 @@ services:
       - certbot_www:/var/www/certbot
 
   # Real TURN deployment needs to run wherever it has a genuinely public IP
-  # (not behind another NAT) and a real, rotated static-auth-secret - do not
-  # reuse the demo credential from the dev docker-compose.yml.
+  # (not behind another NAT). Uses coturn's REST API auth mode
+  # (--use-auth-secret) rather than a single static username/password: the
+  # server's src/webrtc/turnCredentials.ts mints a fresh HMAC-derived
+  # username/password per user session that coturn validates and expires on
+  # its own, so a credential visible in any client's WebRTC internals stops
+  # working shortly after rather than granting standing relay access.
+  # TURN_SECRET must match the server's TURN_SECRET below exactly.
   coturn:
     image: coturn/coturn:4.6
     restart: unless-stopped
     command:
-      - --lt-cred-mech
-      - --user=${TURN_USERNAME}:${TURN_CREDENTIAL}
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_SECRET}
       - --realm=${TURN_REALM}
       - --no-cli
       - --listening-port=3478

@@ -9,10 +9,19 @@ export function moderationAdminRouter(): Router {
 
   router.get('/reports', async (req, res) => {
     const status = (req.query.status as string | undefined) ?? 'PENDING_REVIEW';
+    const userSummary = {
+      id: true,
+      email: true,
+      displayName: true,
+      banned: true,
+      verificationStatus: true,
+      verifiedGender: true,
+    } as const;
+
     const reports = await prisma.moderationReport.findMany({
       where: { status: status as never },
       orderBy: { createdAt: 'asc' },
-      include: { reportedUser: true, reporter: true },
+      include: { reportedUser: { select: userSummary }, reporter: { select: userSummary } },
     });
     res.json(reports);
   });

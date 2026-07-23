@@ -10,6 +10,7 @@ import { prisma } from '../db';
 import { MatchingQueue } from '../matching/queue';
 import { toSharedGender } from '../matching/genderMap';
 import { createReport } from '../moderation/reports';
+import { verifyAuthToken } from '../auth/jwt';
 
 interface SocketState {
   userId: string;
@@ -32,11 +33,18 @@ export function createSocketServer(httpServer: HttpServer, redis: Redis) {
 
   io.on('connection', (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
     void (async () => {
-      // Placeholder auth: real deployment must authenticate via a signed
-      // session token in the handshake, not a bare userId.
-      const userId = socket.handshake.auth?.userId as string | undefined;
-      if (!userId) {
+      const token = socket.handshake.auth?.token as string | undefined;
+      if (!token) {
         socket.emit('errorMessage', { message: 'authentication required' });
+        socket.disconnect(true);
+        return;
+      }
+
+      let userId: string;
+      try {
+        userId = verifyAuthToken(token).userId;
+      } catch {
+        socket.emit('errorMessage', { message: 'invalid or expired token' });
         socket.disconnect(true);
         return;
       }

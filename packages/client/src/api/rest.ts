@@ -51,3 +51,49 @@ export async function startVerification(token: string) {
   if (!res.ok) throw new Error('failed to start verification');
   return res.json() as Promise<{ redirectUrl: string }>;
 }
+
+export interface ReportUserSummary {
+  id: string;
+  email: string;
+  displayName: string;
+  banned: boolean;
+  verificationStatus: string;
+  verifiedGender: string | null;
+}
+
+export interface ModerationReportView {
+  id: string;
+  sessionId: string;
+  reason: string;
+  note: string | null;
+  status: string;
+  createdAt: string;
+  reporter: ReportUserSummary;
+  reportedUser: ReportUserSummary;
+}
+
+function adminHeaders(adminToken: string) {
+  return { 'x-admin-token': adminToken };
+}
+
+export async function listPendingReports(adminToken: string) {
+  const res = await fetch(`${SERVER_URL}/admin/moderation/reports?status=PENDING_REVIEW`, {
+    headers: adminHeaders(adminToken),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? 'failed to load reports');
+  return res.json() as Promise<ModerationReportView[]>;
+}
+
+export async function resolveReport(
+  adminToken: string,
+  reportId: string,
+  action: 'ACTION_TAKEN' | 'DISMISSED',
+  reviewerLabel?: string
+) {
+  const res = await fetch(`${SERVER_URL}/admin/moderation/reports/${reportId}/resolve`, {
+    method: 'POST',
+    headers: { ...adminHeaders(adminToken), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, reviewerLabel }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? 'failed to resolve report');
+}

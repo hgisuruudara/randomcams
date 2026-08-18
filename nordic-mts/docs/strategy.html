@@ -1,0 +1,1277 @@
+<title>Nordic Bio Pallet Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+<style>
+:root{
+  --ink:#101314;
+  --ink-2:#3d4644;
+  --ink-3:#6d7673;
+  --paper:#F2F3F0;
+  --surface:#ffffff;
+  --surface-2:#E9EBE6;
+  --rule:#D3D7D0;
+  --rule-strong:#AFB5AD;
+  --accent:#C9990B;
+  --accent-ink:#7a5c00;
+  --accent-wash:#FBF3D8;
+  --green:#1E7A4C;
+  --green-wash:#DCEEE3;
+  --red:#A93B2C;
+  --red-wash:#F6DFDA;
+  --blue:#215B7E;
+  --blue-wash:#DEEAF1;
+  --shadow:0 1px 0 rgba(16,19,20,.05), 0 8px 24px -18px rgba(16,19,20,.5);
+  --measure:68ch;
+  --f-display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E6E9E4;
+    --ink-2:#B3BAB5;
+    --ink-3:#828A86;
+    --paper:#111413;
+    --surface:#191D1C;
+    --surface-2:#212625;
+    --rule:#2C3231;
+    --rule-strong:#414846;
+    --accent:#E6B93C;
+    --accent-ink:#E6B93C;
+    --accent-wash:#2A2314;
+    --green:#5FBF8C;
+    --green-wash:#152B21;
+    --red:#E08272;
+    --red-wash:#2E1A16;
+    --blue:#79B4D6;
+    --blue-wash:#15242D;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E6E9E4;
+  --ink-2:#B3BAB5;
+  --ink-3:#828A86;
+  --paper:#111413;
+  --surface:#191D1C;
+  --surface-2:#212625;
+  --rule:#2C3231;
+  --rule-strong:#414846;
+  --accent:#E6B93C;
+  --accent-ink:#E6B93C;
+  --accent-wash:#2A2314;
+  --green:#5FBF8C;
+  --green-wash:#152B21;
+  --red:#E08272;
+  --red-wash:#2E1A16;
+  --blue:#79B4D6;
+  --blue-wash:#15242D;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:18px;
+  line-height:1.62;
+  margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 96px}
+.col{max-width:var(--measure);margin-inline:auto}
+p{margin:0 0 1.05em}
+strong{font-weight:600}
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible,button:focus-visible,.cell:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;font-weight:600;letter-spacing:-.015em}
+h2{font-size:clamp(28px,3.4vw,38px);line-height:1.08}
+h3{font-size:clamp(20px,2.2vw,24px);line-height:1.2;margin:2.4em 0 .55em}
+h4{font-size:17px;line-height:1.3;margin:2em 0 .4em;letter-spacing:.005em}
+.eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 .8em;font-weight:500}
+
+/* ---------- cover ---------- */
+.cover{padding:72px 0 40px;border-bottom:1px solid var(--rule)}
+.tape{height:9px;background:repeating-linear-gradient(135deg,var(--accent) 0 14px,transparent 14px 28px);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:40px}
+.cover h1{font-size:clamp(38px,6.2vw,68px);line-height:.98;letter-spacing:-.03em;font-weight:700;max-width:16ch}
+.cover .lede{font-size:clamp(19px,2.1vw,22px);color:var(--ink-2);max-width:56ch;margin-top:22px}
+.metastrip{display:flex;flex-wrap:wrap;gap:0;margin-top:38px;border:1px solid var(--rule);background:var(--surface);border-radius:3px;overflow:hidden}
+.metastrip div{flex:1 1 150px;padding:13px 16px;border-right:1px solid var(--rule)}
+.metastrip div:last-child{border-right:0}
+.metastrip dt{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 3px}
+.metastrip dd{margin:0;font-family:var(--f-display);font-size:15px;font-weight:500}
+
+/* ---------- sections ---------- */
+section{padding-top:66px}
+.part{display:grid;grid-template-columns:1fr;gap:0}
+.parthead{border-top:2px solid var(--ink);padding-top:14px;margin-bottom:26px}
+.partno{font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;color:var(--accent-ink);text-transform:uppercase;font-weight:600}
+.sub{color:var(--ink-2);font-size:17.5px;max-width:60ch;margin-top:.5em}
+
+ul,ol{margin:0 0 1.15em;padding-left:1.25em}
+li{margin:.3em 0}
+li::marker{color:var(--ink-3)}
+
+code,.mono{font-family:var(--f-mono);font-size:.88em;background:var(--surface-2);padding:.12em .38em;border-radius:3px;letter-spacing:-.01em}
+
+/* ---------- callouts ---------- */
+.note{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:3px;padding:18px 20px;margin:26px 0}
+.note p:last-child{margin-bottom:0}
+.note .lbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);display:block;margin-bottom:7px;font-weight:600}
+.rulebox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:22px 24px;margin:28px 0;box-shadow:var(--shadow)}
+.rulebox p{font-family:var(--f-display);font-size:20px;font-weight:500;line-height:1.35;margin:0}
+
+/* ---------- figures ---------- */
+figure{margin:34px 0;max-width:100%}
+figure svg{display:block;width:100%;height:auto;max-width:100%}
+figcaption{font-size:14.5px;color:var(--ink-3);margin-top:12px;line-height:1.5;font-family:var(--f-display)}
+.figwide{max-width:1000px;margin-inline:auto}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;margin:26px 0;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-family:var(--f-display);font-size:15px;min-width:560px}
+th{text-align:left;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:12px 16px;border-bottom:1px solid var(--rule-strong);background:var(--surface-2);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.45}
+tr:last-child td{border-bottom:0}
+td.num,th.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;padding:3px 8px;border-radius:99px;white-space:nowrap;display:inline-block;font-weight:500}
+.pill.g{background:var(--green-wash);color:var(--green)}
+.pill.r{background:var(--red-wash);color:var(--red)}
+.pill.a{background:var(--accent-wash);color:var(--accent-ink)}
+.pill.b{background:var(--blue-wash);color:var(--blue)}
+</style>
+<style>
+/* ---------- label / QR cards ---------- */
+.labels{display:flex;flex-wrap:wrap;gap:20px;margin:30px 0}
+.lbl-card{background:#fff;color:#101314;border:2px solid #101314;border-radius:5px;padding:15px;display:flex;gap:14px;align-items:center;flex:1 1 258px}
+.lbl-card.loc{border-color:#1E7A4C}
+.lbl-card .qr{width:86px;flex:0 0 86px}
+.lbl-card .qr svg{display:block;width:100%;height:auto}
+.lbl-id{font-family:var(--f-display);font-size:34px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.lbl-card.loc .lbl-id{color:#1E7A4C;font-size:30px}
+.lbl-seq{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#6d7673;margin-top:3px}
+.lbl-name{font-family:var(--f-display);font-size:15px;font-weight:600;margin-top:8px}
+.lbl-meta{font-family:var(--f-display);font-size:13px;color:#3d4644}
+.lbl-foot{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#9aa19d;margin-top:9px}
+
+/* ---------- id anatomy ---------- */
+.anatomy{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:30px 24px 22px;margin:30px 0;text-align:center}
+.anatomy .big{font-family:var(--f-mono);font-size:clamp(30px,6vw,52px);font-weight:600;letter-spacing:.02em;line-height:1}
+.anatomy .big .p1{color:var(--ink)}
+.anatomy .big .dash{color:var(--ink-3)}
+.anatomy .big .p2{color:var(--accent-ink)}
+.anatomy .legs{display:flex;justify-content:center;gap:clamp(20px,8vw,90px);margin-top:16px;flex-wrap:wrap}
+.anatomy .leg{max-width:22ch;font-family:var(--f-display);font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.anatomy .leg b{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;font-weight:600}
+
+/* ---------- step strip ---------- */
+.steps{display:grid;gap:14px;margin:30px 0;grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.step{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 17px;box-shadow:var(--shadow)}
+.step .k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+.step h4{margin:6px 0 5px;font-size:16.5px}
+.step p{font-size:14.5px;color:var(--ink-2);margin:0;line-height:1.5;font-family:var(--f-display)}
+
+/* ---------- interactive map ---------- */
+.demo{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:22px;margin:32px 0;box-shadow:var(--shadow)}
+.demo-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+.demo-title{font-family:var(--f-display);font-weight:600;font-size:17px}
+.demo-hint{font-family:var(--f-display);font-size:13.5px;color:var(--ink-3)}
+.aisles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:22px;margin:20px 0 6px}
+.aisle{min-width:0}
+.aisle-name{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.cell{aspect-ratio:1/.8;border:1px solid var(--rule-strong);border-radius:2px;background:var(--green-wash);color:var(--green);font-family:var(--f-mono);font-size:9.5px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s ease, background .18s ease;padding:0;letter-spacing:.02em}
+.cell.occ{background:var(--red-wash);color:var(--red)}
+.cell:hover{transform:translateY(-2px)}
+.cell.sel{outline:2.5px solid var(--accent);outline-offset:1px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;font-family:var(--f-display);font-size:13px;color:var(--ink-2);align-items:center}
+.legend i{width:13px;height:13px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-2px;border:1px solid var(--rule-strong)}
+.readout{margin-top:18px;border-top:1px solid var(--rule);padding-top:16px;display:grid;gap:14px;grid-template-columns:minmax(200px,1fr) minmax(220px,1.3fr)}
+.readout .box h5{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px;font-weight:600}
+.readout .box p{font-family:var(--f-display);font-size:14.5px;margin:0;color:var(--ink-2);line-height:1.5}
+.readout .box strong{color:var(--ink)}
+.log{font-family:var(--f-mono);font-size:12px;line-height:1.75;color:var(--ink-2);max-height:130px;overflow-y:auto;margin:0;list-style:none;padding:0}
+.log li{border-bottom:1px dotted var(--rule);padding:1px 0}
+.log .t{color:var(--ink-3)}
+.log .a-place{color:var(--red)}
+.log .a-take{color:var(--green)}
+.btn{font-family:var(--f-display);font-size:13.5px;font-weight:500;background:var(--surface-2);color:var(--ink);border:1px solid var(--rule-strong);border-radius:3px;padding:7px 13px;cursor:pointer}
+.btn:hover{background:var(--accent-wash);border-color:var(--accent)}
+
+/* ---------- phones ---------- */
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px;margin:32px 0}
+.phone{background:var(--surface);border:1px solid var(--rule-strong);border-radius:16px;padding:11px;box-shadow:var(--shadow)}
+.phone .scr{background:var(--paper);border-radius:9px;padding:14px;min-height:330px;display:flex;flex-direction:column;gap:11px}
+.phone .bar{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.06em}
+.phone h5{font-family:var(--f-display);font-size:16px;margin:0;font-weight:600}
+.phone .view{flex:1;border:1.5px dashed var(--rule-strong);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-family:var(--f-mono);font-size:10.5px;text-align:center;padding:10px;min-height:96px}
+.phone .row{font-family:var(--f-display);font-size:13px;color:var(--ink-2);display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--rule);padding-bottom:5px}
+.phone .row b{color:var(--ink);font-weight:600}
+.phone .cta{background:var(--green);color:var(--surface);border-radius:5px;text-align:center;padding:11px;font-family:var(--f-display);font-weight:600;font-size:14.5px}
+.phone .cta.warn{background:var(--red)}
+.phone .cap{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:9px;text-align:center}
+.phone .big-ok{font-family:var(--f-display);font-size:15px;font-weight:600;color:var(--green);text-align:center;padding:6px 0}
+
+/* ---------- timeline ---------- */
+.tl{border-left:2px solid var(--rule-strong);margin:30px 0 30px 6px;padding-left:24px;display:grid;gap:26px}
+.tl .ph{position:relative}
+.tl .ph::before{content:"";position:absolute;left:-31px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--paper)}
+.tl .w{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+.tl h4{margin:4px 0 6px}
+.tl p{font-size:15.5px;color:var(--ink-2);margin:0;font-family:var(--f-display)}
+
+/* ---------- misc ---------- */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin:28px 0}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:19px 20px}
+.card h4{margin:0 0 7px}
+.card p,.card li{font-size:15px;color:var(--ink-2);font-family:var(--f-display);line-height:1.5}
+.card p:last-child{margin-bottom:0}
+.kicker{font-family:var(--f-display);font-size:15px;color:var(--ink-3)}
+hr.thin{border:0;border-top:1px solid var(--rule);margin:52px 0 0}
+.foot{margin-top:60px;padding-top:26px;border-top:2px solid var(--ink);font-family:var(--f-display);font-size:14px;color:var(--ink-3)}
+.foot a{color:var(--ink-2)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){
+  body{font-size:17px}
+  .metastrip div{flex-basis:50%;border-right:0;border-bottom:1px solid var(--rule)}
+  .readout{grid-template-columns:1fr}
+}
+</style>
+<div class="tape"></div>
+<div class="wrap">
+
+<header class="cover">
+  <div class="col">
+    <p class="eyebrow">Strategic design document &nbsp;·&nbsp; Version 1.0</p>
+    <h1>Every pallet, always findable.</h1>
+    <p class="lede">A material tracking system for Nordic Bio Cosmetic Production Oy. Two printed codes, two scans, one honest record of where everything is — designed so a new employee can use it correctly on their first morning.</p>
+    <dl class="metastrip">
+      <div><dt>Prepared for</dt><dd>Nordic Bio Cosmetic Production Oy</dd></div>
+      <div><dt>Subject</dt><dd>Warehouse Material Tracking System</dd></div>
+      <div><dt>Date</dt><dd>18 August 2026</dd></div>
+      <div><dt>Status</dt><dd>Design agreed, ready to build</dd></div>
+    </dl>
+  </div>
+</header>
+
+<section id="summary">
+  <div class="col part">
+    <div class="parthead">
+      <span class="partno">If you read only one page</span>
+    </div>
+    <h2>The whole system in ten sentences</h2>
+    <p class="sub">Written for anyone — no warehouse or software background needed.</p>
+
+    <p style="margin-top:1.6em">Every storage place in the warehouse gets a permanent sticker with a code on it, like a house number. Every pallet gets a paper label printed by the system when the pallet is created, showing its product number in large digits.</p>
+    <p>When a worker puts a pallet away, they point their phone at the place, then at the pallet. That's it — two scans, about six seconds. The place is now marked as full, and it turns from green to red on a live map that everyone can see.</p>
+    <p>When the pallet is taken to production, they scan the same two things again and tap <em>Take</em>. The place turns back to green and is immediately offered to the next pallet. If the pallet comes back later — to the same place or a different one — it is just another two scans.</p>
+    <p>Behind all of this, the system writes down every single action with the time and the person's name, and never erases anything. Six months later you can ask <em>“where was that pallet on 14 August, and who moved it?”</em> and get an exact answer.</p>
+    <p>The result: no more walking the aisles looking for material, no more “I think it's in the back somewhere”, and a written history that stands up to an audit.</p>
+
+    <div class="note">
+      <span class="lbl">What it costs you</span>
+      <p>Two printed labels, a phone in each worker's pocket, and about ten minutes of training per person. Nothing else changes about how the warehouse physically works.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="problem">
+  <div class="col part">
+    <div class="parthead">
+      <span class="partno">Part 1</span>
+    </div>
+    <h2>The problem this solves</h2>
+    <p class="sub">What happens today, and what it actually costs.</p>
+
+    <p style="margin-top:1.6em">In a warehouse without tracking, the location of material lives in three unreliable places: the memory of whoever put it there, a whiteboard that is out of date by lunchtime, and a spreadsheet somebody updates when they remember. All three fail in the same way — they are correct until the moment someone moves something without telling anyone.</p>
+
+    <div class="two">
+      <div class="card">
+        <h4>Searching</h4>
+        <p>A worker walks the aisles looking for a pallet of caps. Ten to twenty minutes, several times a day, multiplied by every person on the floor.</p>
+      </div>
+      <div class="card">
+        <h4>Double buying</h4>
+        <p>Material that cannot be found is assumed to be gone, so more is ordered — while the original pallet sits on a top shelf in another aisle.</p>
+      </div>
+      <div class="card">
+        <h4>Stale stock</h4>
+        <p>Because nobody knows which pallet arrived first, the newest one gets used first and the oldest quietly ages at the back.</p>
+      </div>
+      <div class="card">
+        <h4>No history</h4>
+        <p>When something goes wrong, there is no way to reconstruct who moved what, and when. Every question turns into a conversation instead of an answer.</p>
+      </div>
+    </div>
+
+    <p>None of these is dramatic on any single day. Together they are the reason warehouse staff feel busy without getting more done.</p>
+
+    <div class="rulebox">
+      <p>The goal of this system is narrow and deliberate: <em>always know where a pallet is, and always know who moved it.</em> It is not a stock accounting system, not a purchasing system, and not an ERP. Everything it does serves that one sentence.</p>
+    </div>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="idea">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 2</span></div>
+    <h2>The four rules the system is built on</h2>
+    <p class="sub">Everything else in this document follows from these. If you disagree with one of them, now is the moment to say so.</p>
+
+    <div class="steps" style="margin-top:2em">
+      <div class="step"><span class="k">Rule one</span><h4>Two codes, nothing more</h4><p>A code on the place, a code on the pallet. Products themselves get no stickers.</p></div>
+      <div class="step"><span class="k">Rule two</span><h4>The code is a pointer</h4><p>The label holds only an identifier. All the details live in the database, where they can change.</p></div>
+      <div class="step"><span class="k">Rule three</span><h4>Nothing is ever erased</h4><p>Corrections are added as new lines. The history is written once and kept forever.</p></div>
+      <div class="step"><span class="k">Rule four</span><h4>Never block the forklift</h4><p>When reality and the database disagree, reality wins. The system records the difference and moves on.</p></div>
+    </div>
+
+    <h3>What actually happens when someone scans</h3>
+    <p>The whole system is one loop, repeated hundreds of times a day. Two scans go in; a database update, a permanent log line and a colour change on everyone's screen come out.</p>
+  </div>
+
+  <figure class="figwide">
+    <svg viewBox="0 0 920 330" role="img" aria-label="Two scans from a phone become one message to the server, which updates the location, appends a log line, and refreshes the live map for everyone" style="color:var(--ink)">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor">
+        <rect x="16" y="46" width="160" height="62" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="30" y="70" font-size="11" opacity=".62">STICKER ON THE RACK</text>
+        <text x="30" y="90" font-size="14" font-weight="600">LOC-A-01-3</text>
+
+        <rect x="16" y="176" width="160" height="62" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="30" y="200" font-size="11" opacity=".62">LABEL ON THE PALLET</text>
+        <text x="30" y="220" font-size="14" font-weight="600">14250-001</text>
+
+        <rect x="252" y="82" width="118" height="120" rx="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="264" y="96" width="94" height="82" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+        <text x="311" y="143" text-anchor="middle" font-size="11" opacity=".72">CAMERA</text>
+        <text x="311" y="196" text-anchor="middle" font-size="10.5" opacity=".62">PHONE</text>
+
+        <line x1="176" y1="77" x2="248" y2="112" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="184" y="76" font-size="11" opacity=".72">scan 1</text>
+        <line x1="176" y1="207" x2="248" y2="172" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="184" y="222" font-size="11" opacity=".72">scan 2</text>
+
+        <rect x="440" y="112" width="132" height="60" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="506" y="139" text-anchor="middle" font-size="12" font-weight="600">MTS SERVER</text>
+        <text x="506" y="157" text-anchor="middle" font-size="10.5" opacity=".62">checks &amp; records</text>
+
+        <line x1="374" y1="142" x2="436" y2="142" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="405" y="132" text-anchor="middle" font-size="11" opacity=".72">one message</text>
+
+        <rect x="672" y="26" width="232" height="58" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="688" y="48" font-size="11" opacity=".62">LOCATION RECORD</text>
+        <text x="688" y="68" font-size="12.5">A-01-3 &#8594; occupied</text>
+
+        <rect x="672" y="113" width="232" height="58" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="688" y="135" font-size="11" opacity=".62">PERMANENT LOG</text>
+        <text x="688" y="155" font-size="12.5">18.08 14:32 Mikael PLACE</text>
+
+        <rect x="672" y="200" width="232" height="58" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="688" y="222" font-size="11" opacity=".62">EVERY SCREEN</text>
+        <text x="688" y="242" font-size="12.5">cell turns green &#8594; red</text>
+
+        <path d="M572 132 L620 132 L620 55 L668 55" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="626" y="46" font-size="11" opacity=".72">updates</text>
+        <line x1="572" y1="142" x2="668" y2="142" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="620" y="133" text-anchor="middle" font-size="11" opacity=".72">appends</text>
+        <path d="M572 152 L620 152 L620 229 L668 229" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="626" y="248" font-size="11" opacity=".72">refreshes</text>
+
+        <text x="16" y="296" font-size="11" opacity=".62">TOTAL TIME: ABOUT SIX SECONDS &#183; NOTHING IS SAVED UNTIL BOTH SCANS ARE DONE AND CONFIRMED</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 1.</b> The core loop. Two scans produce one message; the server updates the location, writes an unerasable log line, and pushes the colour change to every screen in the building.</figcaption>
+  </figure>
+</section>
+<hr class="thin">
+
+<section id="codes">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 3</span></div>
+    <h2>The two codes</h2>
+    <p class="sub">These are real, working QR codes — point a phone camera at them and it will read out exactly what the app receives.</p>
+  </div>
+
+  <div class="col">
+    <div class="labels">
+      <div class="lbl-card">
+        <div class="qr"><svg preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 76"><path transform="scale(4)" stroke="#101314" d="M2 2.5h7m1 0h1m1 0h1m1 0h1m1 0h1m-15 1h1m5 0h1m1 0h2m1 0h1m1 0h2m-15 1h1m1 0h3m1 0h1m1 0h2m1 0h4m-15 1h1m1 0h3m1 0h1m1 0h1m1 0h1m-11 1h1m1 0h3m1 0h1m2 0h4m1 0h1m-15 1h1m5 0h1m2 0h1m3 0h2m-15 1h7m2 0h2m0 1h1m-12 1h1m3 0h1m2 0h2m2 0h2m1 0h1m-14 1h1m7 0h1m1 0h1m-12 1h2m2 0h1m1 0h1m5 0h3m-12 1h7m3 0h2m-15 1h2m2 0h1m3 0h1m1 0h1m1 0h3m-12 1h2m2 0h1m1 0h3m2 0h1m-15 1h1m2 0h5m2 0h1m1 0h2"/></svg>
+</div>
+        <div>
+          <div class="lbl-id">14250</div>
+          <div class="lbl-seq">pallet 001</div>
+          <div class="lbl-name">Amber Jar 50 ml</div>
+          <div class="lbl-meta">120 pcs &nbsp;·&nbsp; + 1 more item</div>
+          <div class="lbl-foot">Nordic Bio &nbsp;·&nbsp; 18.08.2026 &nbsp;·&nbsp; M.K.</div>
+        </div>
+      </div>
+      <div class="lbl-card loc">
+        <div class="qr"><svg preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 76"><path transform="scale(4)" stroke="#101314" d="M2 2.5h7m1 0h1m1 0h1m1 0h1m1 0h1m-15 1h1m5 0h1m3 0h1m2 0h1m-14 1h1m1 0h3m1 0h1m1 0h3m3 0h1m-15 1h1m1 0h3m1 0h1m1 0h1m2 0h2m-13 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-15 1h1m5 0h1m1 0h4m2 0h1m-15 1h7m2 0h3m1 0h1m-6 1h1m-9 1h1m4 0h2m1 0h5m1 0h1m-13 1h2m1 0h1m8 0h1m-15 1h2m6 0h5m-11 1h1m1 0h3m1 0h1m2 0h1m1 0h1m-14 1h1m1 0h1m2 0h6m2 0h1m-12 1h2m2 0h1m5 0h1m1 0h1m-15 1h3m2 0h2m1 0h1m3 0h1m1 0h1"/></svg>
+</div>
+        <div>
+          <div class="lbl-id">A-01-3</div>
+          <div class="lbl-seq">location</div>
+          <div class="lbl-name">Aisle A · Rack 01 · Level 3</div>
+          <div class="lbl-meta">1 pallet · max 800 kg</div>
+          <div class="lbl-foot">Nordic Bio &nbsp;·&nbsp; permanent placard</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>The pallet label</h3>
+    <p>Printed by the system the moment a pallet is created, on ordinary paper, and slipped into a plastic pallet pocket. The product number is the biggest thing on the label because that is the number people say out loud. The pallet number sits underneath in small type — the system needs it, humans mostly don't.</p>
+
+    <div class="anatomy">
+      <div class="big"><span class="p1">14250</span><span class="dash">-</span><span class="p2">001</span></div>
+      <div class="legs">
+        <div class="leg"><b>Product number</b>Your existing number for that material. Typed once when the pallet is created; the name appears by itself.</div>
+        <div class="leg"><b>Pallet counter</b>Added automatically. Simply “the first pallet of 14250 we ever had”. Nobody types this.</div>
+      </div>
+    </div>
+
+    <p>This is the compromise that makes the whole system work. Your staff read the label as <em>“a pallet of 14250”</em>, exactly as they think about it today. The system reads it as one specific pallet out of the many pallets of 14250 that may exist at the same time — which is what makes the question <em>“which pallet is in A-01-3?”</em> answerable at all.</p>
+
+    <div class="note">
+      <span class="lbl">Why not just the product number</span>
+      <p>If three pallets of 14250 all carried the same code, and one of them moved, the system could not tell which. Stock totals would stay right while the locations quietly became fiction — the exact failure the system exists to prevent. The three added digits cost nothing and remove the problem entirely.</p>
+    </div>
+
+    <h3>The location placard</h3>
+    <p>One permanent sticker per storage place, fixed to the rack beam at chest height so it can be scanned without bending or climbing. The address reads <span class="mono">Aisle · Rack · Level</span>, the same order a person would say it. This mirrors the convention used across the warehousing industry, where locations are addressed hierarchically from the widest area down to the individual position.</p>
+
+    <ul>
+      <li><span class="mono">A-01-3</span> — aisle A, rack 01, level 3. A normal racking slot, one pallet.</li>
+      <li><span class="mono">FLOOR-02</span> — a marked floor square, which may hold several pallets.</li>
+      <li><span class="mono">GOODS-IN</span> — the receiving area. Real, scannable, and visible on the map, so “arrived but not put away yet” is never invisible.</li>
+      <li><span class="mono">LINE-2</span> — beside production line 2. When a pallet goes to the line it is not lost, it is simply <em>at the line</em>.</li>
+    </ul>
+
+    <p>All location labels are generated in one go: the administrator enters “Aisle A, racks 1 to 12, levels 1 to 4”, and the system produces a printable sheet of 48 labels ready to be stuck on the beams. Tagging the whole warehouse is an afternoon of work, once.</p>
+
+    <h3>What the code physically contains</h3>
+    <p>Nine characters, and nothing else. The pallet QR above contains the text <span class="mono">14250-001</span>. Not the product name, not the quantity, not the date.</p>
+    <p>This matters more than it sounds. Quantities change, products get renamed, pallets get emptied. If those details were printed inside the code, the label would start lying the moment anything changed and would have to be reprinted constantly. Because the code holds only an identifier, the label stays true for the pallet's entire life while the database keeps the details current.</p>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="workflow">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 4</span></div>
+    <h2>A pallet's life, from label to bin</h2>
+    <p class="sub">Six actions cover everything that can happen to a pallet. There is no seventh.</p>
+
+    <h3>Creating a pallet</h3>
+    <p>Material arrives. The worker opens <em>Create pallet</em> and types the product number — <span class="mono">14250</span>. The name appears by itself from the product list, which is how the system stops two people from spelling the same jar two different ways. They add the quantity and press <em>Create</em>.</p>
+    <p>If the pallet carries more than one product stacked on it, <em>Add another product</em> adds a second line, and a third. Most pallets have one line; mixed pallets are handled without being made the normal case.</p>
+    <p>The system issues the next number in sequence, draws the QR code, and offers <em>Print label</em>. Ten seconds later the label is on the pallet.</p>
+  </div>
+
+  <figure class="figwide">
+    <svg viewBox="0 0 900 300" role="img" aria-label="A pallet is created, then loops between being in a location and being in someone's hands, and finally is closed when empty" style="color:var(--ink)">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+        <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" style="fill:var(--accent)"/>
+        </marker>
+      </defs>
+      <g font-family="IBM Plex Mono, monospace" fill="currentColor">
+        <rect x="24" y="116" width="176" height="72" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="112" y="146" text-anchor="middle" font-size="12.5" font-weight="600">CREATED</text>
+        <text x="112" y="166" text-anchor="middle" font-size="11" opacity=".64">label printed</text>
+
+        <rect x="304" y="28" width="214" height="72" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="411" y="58" text-anchor="middle" font-size="12.5" font-weight="600">IN A LOCATION</text>
+        <text x="411" y="78" text-anchor="middle" font-size="11" opacity=".64">map cell is red</text>
+
+        <rect x="304" y="204" width="214" height="72" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="411" y="234" text-anchor="middle" font-size="12.5" font-weight="600">IN HAND</text>
+        <text x="411" y="254" text-anchor="middle" font-size="11" opacity=".64">map cell is green again</text>
+
+        <rect x="684" y="116" width="192" height="72" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="780" y="146" text-anchor="middle" font-size="12.5" font-weight="600">CLOSED</text>
+        <text x="780" y="166" text-anchor="middle" font-size="11" opacity=".64">number retired forever</text>
+
+        <path d="M200 140 L300 82" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="212" y="106" font-size="11" opacity=".78">place</text>
+
+        <path d="M352 100 L352 200" fill="none" style="stroke:var(--accent)" stroke-width="2" marker-end="url(#ar3)"/>
+        <text x="344" y="156" text-anchor="end" font-size="11.5" style="fill:var(--accent-ink)" font-weight="600">take</text>
+
+        <path d="M470 204 L470 104" fill="none" style="stroke:var(--accent)" stroke-width="2" marker-end="url(#ar3)"/>
+        <text x="480" y="156" font-size="11.5" style="fill:var(--accent-ink)" font-weight="600">place again</text>
+
+        <path d="M518 246 L600 246 L600 176 L680 162" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="530" y="238" font-size="11" opacity=".78">last item used &#8594; close</text>
+
+        <path d="M518 58 L600 58 L600 128 L680 142" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <text x="530" y="50" font-size="11" opacity=".78">rack found empty &#8594; close</text>
+
+        <text x="411" y="160" text-anchor="middle" font-size="10.5" opacity=".55">the daily loop</text>
+        <text x="24" y="294" font-size="11" opacity=".62">MERGE COMBINES TWO PART-USED PALLETS: THE ONE EMPTIED IS CLOSED AUTOMATICALLY</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 2.</b> The complete life of a pallet. The yellow loop in the middle is what happens hundreds of times a day; everything else happens once per pallet.</figcaption>
+  </figure>
+
+  <div class="col">
+    <h3>The six actions</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Action</th><th>What the worker does</th><th>What changes on the map</th></tr></thead>
+        <tbody>
+          <tr><td><b>Create</b></td><td>Fill the short form, print the label</td><td>Nothing yet — the pallet has no place</td></tr>
+          <tr><td><b>Place</b></td><td>Scan the location, scan the pallet</td><td><span class="pill g">green</span> becomes <span class="pill r">red</span></td></tr>
+          <tr><td><b>Take</b></td><td>Scan the location, scan the pallet, tap Take</td><td><span class="pill r">red</span> becomes <span class="pill g">green</span></td></tr>
+          <tr><td><b>Edit</b></td><td>Correct the quantity or add a product</td><td>Colour unchanged, contents updated</td></tr>
+          <tr><td><b>Merge</b></td><td>Scan the pallet being kept, then the one being emptied</td><td>The emptied pallet's place turns <span class="pill g">green</span></td></tr>
+          <tr><td><b>Close</b></td><td>Confirm the pallet is finished</td><td>Its place turns <span class="pill g">green</span>, the number is retired</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Numbers are never reused</h3>
+    <p>When pallet <span class="mono">14250-001</span> is finished, its number is retired permanently. The next pallet of that product is <span class="mono">14250-004</span>, even if 001, 002 and 003 are all long gone. This works exactly like invoice numbers, and for the same reason: reusing a number destroys the history behind it.</p>
+    <p>So at any moment the warehouse holds a set of numbers with gaps in it — 004, 005, 007 — and that is the correct picture, not a fault. It also hands you something valuable for free:</p>
+
+    <div class="rulebox">
+      <p>Because numbers only ever count upwards, <em>the lowest number is always the oldest pallet.</em> “Take the lowest number first” gives you correct stock rotation with no extra feature, no training, and nothing to configure.</p>
+    </div>
+
+    <h3>One week of pallet 14250-004</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th class="num">When</th><th>Action</th><th class="num">Place</th><th>Map</th></tr></thead>
+        <tbody>
+          <tr><td class="num">Mon 08:10</td><td>Created, 120 jars, label printed</td><td class="num">—</td><td>—</td></tr>
+          <tr><td class="num">Mon 08:25</td><td>Placed after unloading</td><td class="num">A-01-3</td><td><span class="pill r">turns red</span></td></tr>
+          <tr><td class="num">Wed 13:40</td><td>Taken to production line 2</td><td class="num">A-01-3</td><td><span class="pill g">turns green</span></td></tr>
+          <tr><td class="num">Wed 16:05</td><td>Returned with 60 jars left, put in a nearer slot</td><td class="num">B-02-1</td><td><span class="pill r">turns red</span></td></tr>
+          <tr><td class="num">Fri 09:15</td><td>Last 60 used, pallet closed</td><td class="num">B-02-1</td><td><span class="pill g">turns green</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="kicker">Five lines, each with the exact time and the name of the person. Ask the system for the history of this pallet in six months and you get precisely these five lines back.</p>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="map">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 5</span></div>
+    <h2>The overview screen</h2>
+    <p class="sub">One glance answers “where is there space?” and “what is in that slot?”. This is the screen that hangs on the office wall.</p>
+    <p style="margin-top:1.6em">Below is a working model of it. Click any cell to simulate a scan: an empty place takes a pallet and turns red, an occupied place gives its pallet up and turns green. Watch the log fill in on the right — that is exactly what the real system records.</p>
+  </div>
+
+  <div class="col">
+    <div class="demo">
+      <div class="demo-head">
+        <span class="demo-title">Warehouse overview — live</span>
+        <span class="demo-hint">Click a cell to place or take a pallet</span>
+      </div>
+      <div class="aisles" id="aisles"></div>
+      <div class="legend">
+        <span><i style="background:var(--green-wash);border-color:var(--green)"></i>Empty — ready for a pallet</span>
+        <span><i style="background:var(--red-wash);border-color:var(--red)"></i>Occupied</span>
+        <span style="margin-left:auto"><button class="btn" id="reset" type="button">Reset the floor</button></span>
+      </div>
+      <div class="readout">
+        <div class="box">
+          <h5>Selected place</h5>
+          <p id="detail">Nothing selected. Click any cell above.</p>
+        </div>
+        <div class="box">
+          <h5>Event log — nothing here is ever deleted</h5>
+          <ul class="log" id="logbox"><li class="t">waiting for the first scan…</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <h3>What each colour is allowed to mean</h3>
+    <p>Two colours, and one rule that keeps them honest:</p>
+    <div class="rulebox">
+      <p>The colour follows <em>the pallet</em>, not the products on it. If some cartons are taken off a pallet that stays on the rack, the place stays red — because there is still a pallet standing there. The colour always matches what your eyes see in the aisle.</p>
+    </div>
+    <p>Colour is never the only signal. Each cell also carries its code, and occupied cells show the product number, so the screen still works for someone who cannot easily tell red from green, and still works when printed in black and white.</p>
+
+    <h3>Finding things</h3>
+    <p>Type a product number or name into the search box and every place holding it lights up on the map, oldest pallet first. A worker sent to fetch caps gets an answer in three seconds instead of a walk down four aisles — the single change that people notice most in the first week.</p>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="screens">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 6</span></div>
+    <h2>What the worker sees</h2>
+    <p class="sub">The phone app is three screens deep. Big type, big buttons, one thing to do at a time — designed to be used with gloves on, in a cold aisle, at arm's length.</p>
+  </div>
+
+  <div class="col">
+    <div class="phones">
+      <div class="phone">
+        <div class="scr">
+          <div class="bar"><span>NORDIC BIO MTS</span><span>14:31</span></div>
+          <h5>Scan the place</h5>
+          <div class="view">CAMERA VIEW<br>hold over the<br>rack label</div>
+          <div class="row"><span>Step</span><b>1 of 2</b></div>
+          <div class="cta">Type the code instead</div>
+          <div class="cap">nothing is saved yet</div>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="scr">
+          <div class="bar"><span>NORDIC BIO MTS</span><span>14:32</span></div>
+          <h5>Confirm</h5>
+          <div class="row"><span>Place</span><b>A-01-3</b></div>
+          <div class="row"><span>Pallet</span><b>14250-001</b></div>
+          <div class="row"><span>Product</span><b>Amber Jar 50 ml</b></div>
+          <div class="row"><span>Quantity</span><b>120 pcs</b></div>
+          <div class="row"><span>Also on it</span><b>Black Cap 28 mm</b></div>
+          <div class="cta">Place pallet here</div>
+          <div class="cap">one tap, then done</div>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="scr">
+          <div class="bar"><span>NORDIC BIO MTS</span><span>14:32</span></div>
+          <h5>Done</h5>
+          <div class="big-ok">&#10003; 14250-001 is now in A-01-3</div>
+          <div class="row"><span>Was</span><b>Goods-in</b></div>
+          <div class="row"><span>By</span><b>Mikael K.</b></div>
+          <div class="view" style="min-height:60px">UNDO — 58 s</div>
+          <div class="cta">Next pallet</div>
+          <div class="cap">the map has already changed</div>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="scr">
+          <div class="bar"><span>NORDIC BIO MTS</span><span>14:33</span></div>
+          <h5>Place is taken</h5>
+          <div class="row"><span>Place</span><b>A-01-3</b></div>
+          <div class="row"><span>Already holds</span><b>18110-004</b></div>
+          <div class="row"><span>Put there by</span><b>Anna L., 09:12</b></div>
+          <div class="cta warn">Show me the nearest free place</div>
+          <div class="cta" style="background:var(--surface-2);color:var(--ink)">The rack is actually empty</div>
+          <div class="cap">an exception, handled in one tap</div>
+        </div>
+      </div>
+    </div>
+    <p class="kicker">The fourth screen is the important one. Exceptions are not error messages — they are offers of the next sensible action.</p>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="data">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 7</span></div>
+    <h2>What the system remembers</h2>
+    <p class="sub">Five simple lists. A person who can read a spreadsheet can read this.</p>
+  </div>
+
+  <figure class="figwide">
+    <svg viewBox="0 0 900 350" role="img" aria-label="Five tables: products, pallets, pallet items, locations and events, and how they relate to each other" style="color:var(--ink)">
+      <defs>
+        <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g font-family="IBM Plex Mono, monospace" fill="currentColor">
+        <rect x="16" y="42" width="196" height="112" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="30" y="66" font-size="12" font-weight="600">PRODUCTS</text>
+        <line x1="16" y1="76" x2="212" y2="76" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        <text x="30" y="95" font-size="11" opacity=".78">14250</text>
+        <text x="30" y="113" font-size="11" opacity=".78">Amber Jar 50 ml</text>
+        <text x="30" y="131" font-size="11" opacity=".78">pcs &#183; active</text>
+
+        <rect x="330" y="24" width="212" height="130" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="344" y="48" font-size="12" font-weight="600">PALLETS</text>
+        <line x1="330" y1="58" x2="542" y2="58" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        <text x="344" y="77" font-size="11" opacity=".78">14250-001</text>
+        <text x="344" y="95" font-size="11" opacity=".78">status: in a location</text>
+        <text x="344" y="113" font-size="11" opacity=".78">place: A-01-3</text>
+        <text x="344" y="131" font-size="11" opacity=".78">created 18.08 by M.K.</text>
+
+        <rect x="330" y="216" width="212" height="104" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="344" y="240" font-size="12" font-weight="600">WHAT IS ON IT</text>
+        <line x1="330" y1="250" x2="542" y2="250" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        <text x="344" y="269" font-size="11" opacity=".78">14250-001 &#183; 14250 &#183; 120</text>
+        <text x="344" y="287" font-size="11" opacity=".78">14250-001 &#183; 18110 &#183; 40</text>
+        <text x="344" y="305" font-size="11" opacity=".62">one line per product</text>
+
+        <rect x="672" y="42" width="212" height="112" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="686" y="66" font-size="12" font-weight="600">LOCATIONS</text>
+        <line x1="672" y1="76" x2="884" y2="76" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        <text x="686" y="95" font-size="11" opacity=".78">A-01-3 &#183; aisle A rack 1</text>
+        <text x="686" y="113" font-size="11" opacity=".78">holds 1 pallet</text>
+        <text x="686" y="131" font-size="11" opacity=".78">status: occupied</text>
+
+        <rect x="672" y="216" width="212" height="104" rx="3" fill="none" stroke="currentColor" stroke-width="2" style="stroke:var(--accent)"/>
+        <text x="686" y="240" font-size="12" font-weight="600" style="fill:var(--accent-ink)">EVENTS &#8212; NEVER ERASED</text>
+        <line x1="672" y1="250" x2="884" y2="250" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        <text x="686" y="269" font-size="11" opacity=".78">18.08 14:32 M.K. PLACE</text>
+        <text x="686" y="287" font-size="11" opacity=".78">14250-001 &#8594; A-01-3</text>
+        <text x="686" y="305" font-size="11" opacity=".62">one line per action</text>
+
+        <line x1="212" y1="98" x2="326" y2="262" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
+        <text x="216" y="196" font-size="10.5" opacity=".72">appears on many pallets</text>
+
+        <line x1="436" y1="154" x2="436" y2="212" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
+        <text x="446" y="188" font-size="10.5" opacity=".72">carries</text>
+
+        <line x1="542" y1="88" x2="668" y2="88" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
+        <text x="605" y="78" text-anchor="middle" font-size="10.5" opacity=".72">occupies at most one</text>
+
+        <path d="M542 130 L600 130 L600 250 L668 250" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar4)"/>
+        <text x="606" y="196" font-size="10.5" opacity=".72">every change</text>
+        <text x="606" y="211" font-size="10.5" opacity=".72">writes a line</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 3.</b> The whole data model. Four lists describe the present; the fifth, in yellow, is the history — written once, never edited, never deleted.</figcaption>
+  </figure>
+
+  <div class="col">
+    <h3>Why the log is the important one</h3>
+    <p>The first four lists tell you what is true right now. The fifth tells you what has happened, and it is the reason this system can be trusted rather than merely believed.</p>
+    <p>Corrections are made by adding a line, never by rubbing one out. If a pallet turns up somewhere it should not be, the system records both the belief and the correction, with the time and the person. Nothing in the app can quietly rewrite yesterday.</p>
+    <p>That single decision is what turns a convenience tool into an audit record — and it costs nothing to implement, as long as it is decided at the beginning rather than bolted on later.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th class="num">Time</th><th>Person</th><th>Action</th><th class="num">Pallet</th><th class="num">Place</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="num">18.08 08:10</td><td>Mikael K.</td><td><span class="pill b">CREATE</span></td><td class="num">14250-004</td><td class="num">—</td><td>120 pcs, label printed</td></tr>
+          <tr><td class="num">18.08 08:25</td><td>Mikael K.</td><td><span class="pill r">PLACE</span></td><td class="num">14250-004</td><td class="num">A-01-3</td><td>from goods-in</td></tr>
+          <tr><td class="num">20.08 13:40</td><td>Anna L.</td><td><span class="pill g">TAKE</span></td><td class="num">14250-004</td><td class="num">A-01-3</td><td>to line 2</td></tr>
+          <tr><td class="num">20.08 16:05</td><td>Anna L.</td><td><span class="pill a">EDIT</span></td><td class="num">14250-004</td><td class="num">—</td><td>120 &#8594; 60 pcs, used on order 8841</td></tr>
+          <tr><td class="num">20.08 16:06</td><td>Anna L.</td><td><span class="pill r">PLACE</span></td><td class="num">14250-004</td><td class="num">B-02-1</td><td>returned to a nearer slot</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="kicker">Exportable to Excel or PDF for any pallet, any place, or any date range — which is what an auditor will ask for.</p>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="exceptions">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 8</span></div>
+    <h2>When things go wrong</h2>
+    <p class="sub">This is the part that decides whether people trust the system or quietly stop using it. Every case below has a defined answer.</p>
+
+    <p style="margin-top:1.6em">A tracking system fails in one of two ways. Either it blocks people from doing their job, so they work around it and the data becomes fiction — or it accepts everything silently, so the data becomes fiction anyway. The way through is a single principle:</p>
+
+    <div class="rulebox">
+      <p>The system almost never stops a worker. It records what really happened, marks the difference for someone to look at, and lets the pallet keep moving. There are exactly two hard stops in the whole application.</p>
+    </div>
+
+    <p>Those two are: placing a pallet into a place that already holds one, and placing a pallet into a place marked out of service. Both are physically impossible, so blocking them prevents nonsense rather than preventing work.</p>
+
+    <h4>A · At the moment of scanning</h4>
+  </div>
+
+  <div class="col">
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What happens</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Label is dirty, torn or unreadable</td><td>Type the code printed in plain text under every QR. A fresh label can be printed from the pallet's own screen; the reprint is logged, because labels are identity.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>Wrong kind of code scanned</td><td>“That's a pallet label — I still need a place label”, with a picture of the right one. The first scan is kept, so nothing is lost.</td><td><span class="pill a">retry</span></td></tr>
+          <tr><td>Same code scanned twice in a second</td><td>Ignored with a short vibration. Prevents duplicate entries from an eager trigger finger.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>Worker scans one code then walks away</td><td>The half-finished action expires after 90 seconds and records nothing at all. Nothing is ever saved on a single scan.</td><td><span class="pill g">no record</span></td></tr>
+          <tr><td>Dark aisle, camera cannot focus</td><td>Torch button on the scanner screen; manual entry always available as a second route.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>A code from some other system is scanned</td><td>“This code isn't one of ours.” Nothing is recorded, nothing is guessed.</td><td><span class="pill a">retry</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>B · Conflicts over places</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What happens</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>The place already holds a pallet</td><td>Blocked. Two offers: <em>show me the nearest free place</em>, or <em>the rack is actually empty</em> — which frees the phantom pallet and records who reported it.</td><td><span class="pill r">hard stop</span></td></tr>
+          <tr><td>Two workers claim the same free place at the same moment</td><td>The first scan wins. The second sees “Anna put a pallet here 3 seconds ago” and is offered the nearest alternative.</td><td><span class="pill a">redirected</span></td></tr>
+          <tr><td>The pallet is recorded as being somewhere else</td><td>Accepted as a move. The old place is freed automatically and the difference is written to the log. The scan in front of you is more trustworthy than yesterday's record.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>A floor zone is at its pallet limit</td><td>Warned, and allowed with a one-tap reason. The supervisor sees it on the differences list.</td><td><span class="pill a">warn</span></td></tr>
+          <tr><td>The rack is damaged or being repaired</td><td>The administrator marks the place out of service. It is skipped by suggestions and refuses pallets until it is restored.</td><td><span class="pill r">hard stop</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>C · The pallet's own life</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What happens</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Pallet emptied, but nobody pressed Close</td><td>The map shows red while the rack is visibly empty. Any worker scans the place and taps <em>the rack is empty</em>; the system closes the pallet and records who reported it. The system heals itself without a supervisor.</td><td><span class="pill g">self-healing</span></td></tr>
+          <tr><td>Only part of the pallet is used</td><td>Quantity is edited, the pallet stays open, the place stays red — because a pallet is still standing there.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>Two part-used pallets combined into one</td><td><em>Merge</em>: scan the pallet you keep, then the one you empty. Contents move across, the emptied pallet closes itself, both actions are logged.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>A pallet is found with no label at all</td><td><em>Adopt</em>: create a record for it on the spot, photograph it, print a label, and flag it for the supervisor to explain later.</td><td><span class="pill a">flagged</span></td></tr>
+          <tr><td>A pallet was closed by mistake</td><td>A supervisor can reopen it. The reopening is itself an event with a reason — the mistake and its correction both stay visible.</td><td><span class="pill a">supervisor</span></td></tr>
+          <tr><td>A product is discontinued</td><td>Marked inactive: no new pallets can be created for it, and every old record still reads correctly. History is never rewritten.</td><td><span class="pill g">continue</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>D · People, phones and the network</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What happens</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>No signal deep in the racking</td><td>Scans are stored on the phone and sent automatically when signal returns. The screen shows “3 waiting”. Each action keeps the time it really happened, not the time it was sent.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>Two phones were offline and disagree</td><td>On reconnection the physically scanned placement wins, and the pallet it displaced becomes the flagged difference. Both workers and the supervisor are told.</td><td><span class="pill a">flagged</span></td></tr>
+          <tr><td>Phone dies halfway through a move</td><td>The pallet stays <em>in hand</em>, with the last place and the person holding it. After 30 minutes it appears on the open list, and anyone can resolve it with two scans.</td><td><span class="pill a">visible</span></td></tr>
+          <tr><td>Shared phone, wrong person signed in</td><td>Shift sign-in with a short PIN and an eight-hour session. Every event carries a name, so the log stays meaningful.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>Wrong button pressed</td><td><em>Undo</em> for 60 seconds. After that, a reversal — and both the original and the reversal stay in the log.</td><td><span class="pill g">continue</span></td></tr>
+          <tr><td>Someone scans a photograph of a place label</td><td>The codes are meaningless outside the app, and a place scanned far from that phone's previous scan is flagged for the supervisor. Not a security system, but not blind either.</td><td><span class="pill a">flagged</span></td></tr>
+          <tr><td>The server is down or the office network fails</td><td>Phones keep queueing scans as if offline. On paper: every code is printed in plain text, and the day's map can be printed each morning as a fallback sheet.</td><td><span class="pill a">degraded</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>E · Keeping the data clean</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Situation</th><th>What happens</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Product number typed wrong</td><td>The name does not appear — “Product 14520 not found”. The pallet cannot be created until the number resolves to a real product. This one check keeps the whole database honest.</td><td><span class="pill r">must fix</span></td></tr>
+          <tr><td>The same product written two different ways</td><td>Impossible by design: names come from the product list, never from free typing.</td><td><span class="pill g">prevented</span></td></tr>
+          <tr><td>A genuinely new product arrives</td><td>An administrator adds it in about fifteen seconds, from the same screen. Workers never invent products themselves.</td><td><span class="pill a">admin</span></td></tr>
+          <tr><td>Somebody disputes what happened</td><td>Export the pallet's history. Five lines, times, names. The conversation ends there.</td><td><span class="pill g">settled</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The weekly ten minutes</h3>
+    <p>Everything the system could not resolve by itself lands on one screen: <em>Differences</em>. Phantom pallets, adopted pallets, overrides, forgotten transits. A supervisor works through the list once a week — usually three or four items — and each decision is recorded with a reason.</p>
+    <p>A tracking system with no such list is not clean; it is simply hiding its disagreements. This one puts them in a single place and expects ten minutes of attention a week.</p>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="compare">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 9</span></div>
+    <h2>What everyone else does, and where we differ</h2>
+    <p class="sub">This design is not invented from nothing. Three things were checked before settling it.</p>
+
+    <h3>1. The pallet identifier</h3>
+    <p>Every serious warehouse system in the world puts a unique identifier on the physical handling unit rather than on the product it contains. The industry name for it is a <em>licence plate</em>: a unique number applied to a pallet or container so that the whole unit can be moved, stored and found as one thing, with the item numbers, quantities and lot numbers linked to it in the database rather than printed on it. Our <span class="mono">14250-001</span> is exactly that idea, dressed in your own product numbering so it reads naturally to your staff.</p>
+
+    <h3>2. The location addressing</h3>
+    <p>Warehouse labelling practice addresses storage places hierarchically — zone, aisle, bay, level, position — and puts a scannable label on every one of them, numbered consistently left to right and bottom to top. Our <span class="mono">A-01-3</span> is a deliberately shortened version of the same convention: short enough to say out loud, long enough to extend when you add a second hall.</p>
+
+    <h3>3. Cosmetics manufacturing rules</h3>
+    <p>ISO 22716, the good manufacturing practice standard for cosmetics, expects raw materials to be stored in designated areas with inventory records showing movement and usage, batch-level traceability, and first-in-first-out stock rotation. This system delivers the designated areas, the movement records and — through the counting numbers — the stock rotation. It does <strong>not</strong> yet carry batch numbers or expiry dates, and that gap is deliberate and reversible; see Part 13.</p>
+  </div>
+
+  <figure class="figwide">
+    <svg viewBox="0 0 880 320" role="img" aria-label="Buying a full warehouse system means adopting six modules to get the one you need, while the purpose-built system is only that one" style="color:var(--ink)">
+      <g font-family="IBM Plex Mono, monospace" fill="currentColor">
+        <text x="20" y="26" font-size="12" font-weight="600">OPTION A &#183; FULL INVENTORY PLATFORM</text>
+        <text x="20" y="44" font-size="11" opacity=".62">you adopt all of it to get one part of it</text>
+        <rect x="20" y="60" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/><text x="34" y="82" font-size="11.5" opacity=".62">Purchase orders &amp; suppliers</text>
+        <rect x="20" y="98" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/><text x="34" y="120" font-size="11.5" opacity=".62">Stock valuation &amp; accounting</text>
+        <rect x="20" y="136" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/><text x="34" y="158" font-size="11.5" opacity=".62">Sales orders &amp; delivery notes</text>
+        <rect x="20" y="174" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="2" style="stroke:var(--accent)"/><text x="34" y="196" font-size="11.5" font-weight="600" style="fill:var(--accent-ink)">Locations &amp; barcode moves</text>
+        <rect x="20" y="212" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/><text x="34" y="234" font-size="11.5" opacity=".62">Lots, serials, reservations</text>
+        <rect x="20" y="250" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/><text x="34" y="272" font-size="11.5" opacity=".62">Reporting &amp; user licences</text>
+        <text x="20" y="304" font-size="11" opacity=".72">TRAINING SURFACE: EVERYTHING ABOVE</text>
+
+        <line x1="404" y1="60" x2="404" y2="284" stroke="currentColor" stroke-width="1" opacity=".3" stroke-dasharray="4 5"/>
+
+        <text x="480" y="26" font-size="12" font-weight="600">OPTION B &#183; PURPOSE-BUILT (THIS DESIGN)</text>
+        <text x="480" y="44" font-size="11" opacity=".62">the one part, shaped to your warehouse</text>
+        <rect x="480" y="174" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="2" style="stroke:var(--accent)"/><text x="494" y="196" font-size="11.5" font-weight="600" style="fill:var(--accent-ink)">Locations &amp; two-scan moves</text>
+        <rect x="480" y="212" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="494" y="234" font-size="11.5">Permanent event log</text>
+        <rect x="480" y="136" width="300" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="494" y="158" font-size="11.5">Live warehouse map</text>
+        <text x="480" y="304" font-size="11" opacity=".72">TRAINING SURFACE: TWO SCANS AND A BUTTON</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 4.</b> The real choice is not features, it is how much system your staff must learn to get the part you actually need. The yellow band is the same capability in both columns.</figcaption>
+  </figure>
+
+  <div class="col">
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Option</th><th>What it gives you</th><th>What it costs</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><b>Full inventory platform</b><br><span class="kicker">Odoo, Fishbowl, Zoho and similar</span></td><td>Locations, barcode moves, lots and serials, plus purchasing, valuation and sales you did not ask for</td><td>Free for a single app in some plans, roughly €30–60 per user per month once you need more; plus set-up and a long training tail</td><td>Right choice if you also want to run purchasing and stock accounting in it. Overweight if you only want to find pallets.</td></tr>
+          <tr><td><b>Paper and a whiteboard</b></td><td>Nothing to buy, nothing to learn</td><td>The searching, double-buying and lost history described in Part 1</td><td>This is today's situation.</td></tr>
+          <tr><td><b>Purpose-built system</b><br><span class="kicker">this document</span></td><td>Exactly the location tracking, the live map and the permanent log</td><td>One build, then hosting of a few euros a month; no per-user fees</td><td>Recommended. Small enough to be maintained, complete enough to be trusted.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">The honest version</span>
+      <p>If Nordic Bio expects to move purchasing, production orders and stock valuation into one system within two years, buy a platform and accept the training weight. If the need is genuinely “know where the pallets are, and keep an honest record”, a purpose-built system will be understood by everyone on the floor by Wednesday of the first week — and that adoption, not the feature list, is what makes tracking data true.</p>
+    </div>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="build">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 10</span></div>
+    <h2>How it is put together</h2>
+    <p class="sub">In plain language, for the person who has to approve it rather than write it.</p>
+
+    <p style="margin-top:1.6em">There is no app to install from an app store. The workers open a web address on their phone once, add it to the home screen, and from then on it looks and behaves like an ordinary app — including working when the phone has no signal. This is a normal, well-supported way to build warehouse tools, and it removes an entire category of problems: no app store approval, no version stuck on somebody's old phone, no per-device licence.</p>
+    <p>The camera scanning uses the phone browser's own barcode reader where it exists, with a small built-in fallback where it doesn't, so the app works on both Android and iPhone without special hardware. Handheld scanners can be added later for high-volume stations; nothing in the design depends on them.</p>
+  </div>
+
+  <figure class="figwide">
+    <svg viewBox="0 0 880 300" role="img" aria-label="Phones queue scans locally and sync to one small server, which serves the office screens and holds the database and nightly backups" style="color:var(--ink)">
+      <defs>
+        <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g font-family="IBM Plex Mono, monospace" fill="currentColor">
+        <rect x="18" y="34" width="180" height="86" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="34" y="58" font-size="12" font-weight="600">PHONES ON THE FLOOR</text>
+        <text x="34" y="78" font-size="11" opacity=".7">web app, added to</text>
+        <text x="34" y="94" font-size="11" opacity=".7">the home screen</text>
+        <text x="34" y="110" font-size="11" style="fill:var(--accent-ink)">queue when offline</text>
+
+        <rect x="18" y="164" width="180" height="86" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="34" y="188" font-size="12" font-weight="600">OFFICE &amp; WALL SCREEN</text>
+        <text x="34" y="208" font-size="11" opacity=".7">live map, search,</text>
+        <text x="34" y="224" font-size="11" opacity=".7">log export, admin</text>
+        <text x="34" y="240" font-size="11" opacity=".7">label printing</text>
+
+        <rect x="336" y="94" width="196" height="96" rx="3" fill="none" stroke="currentColor" stroke-width="2" style="stroke:var(--accent)"/>
+        <text x="434" y="122" text-anchor="middle" font-size="12.5" font-weight="600">ONE SMALL SERVER</text>
+        <text x="434" y="144" text-anchor="middle" font-size="11" opacity=".72">checks every scan,</text>
+        <text x="434" y="160" text-anchor="middle" font-size="11" opacity=".72">writes the log,</text>
+        <text x="434" y="176" text-anchor="middle" font-size="11" opacity=".72">pushes the changes</text>
+
+        <rect x="666" y="46" width="196" height="80" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="682" y="70" font-size="12" font-weight="600">DATABASE</text>
+        <text x="682" y="90" font-size="11" opacity=".7">five tables</text>
+        <text x="682" y="108" font-size="11" opacity=".7">nothing deleted</text>
+
+        <rect x="666" y="160" width="196" height="80" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="682" y="184" font-size="12" font-weight="600">NIGHTLY BACKUP</text>
+        <text x="682" y="204" font-size="11" opacity=".7">kept 90 days,</text>
+        <text x="682" y="222" font-size="11" opacity=".7">restore tested monthly</text>
+
+        <line x1="198" y1="88" x2="332" y2="124" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar5)"/>
+        <text x="212" y="98" font-size="10.5" opacity=".72">scans, when there is signal</text>
+        <line x1="332" y1="160" x2="198" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar5)"/>
+        <text x="212" y="182" font-size="10.5" opacity=".72">live updates, within a second</text>
+        <line x1="532" y1="122" x2="662" y2="94" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar5)"/>
+        <text x="546" y="106" font-size="10.5" opacity=".72">reads &amp; appends</text>
+        <line x1="532" y1="162" x2="662" y2="192" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar5)"/>
+        <text x="546" y="186" font-size="10.5" opacity=".72">03:00 every night</text>
+      </g>
+    </svg>
+    <figcaption><b>Figure 5.</b> The entire technical footprint. One server, one database, no moving parts on the warehouse floor beyond the phones people already carry.</figcaption>
+  </figure>
+
+  <div class="col">
+    <div class="two">
+      <div class="card"><h4>Where it runs</h4><p>A single small server, either in your own office or at a Finnish or EU hosting provider for a few euros a month. All data stays in the EU. No part of the design requires a cloud service you cannot replace.</p></div>
+      <div class="card"><h4>What it is written in</h4><p>Ordinary, boring, well-documented tools — a standard web framework and a PostgreSQL database. Chosen so that any competent developer can pick it up in a day, which matters far more than cleverness.</p></div>
+      <div class="card"><h4>Who can see what</h4><p>Workers sign in with a short PIN and can scan and look things up. Administrators manage products, places and users. Everyone's actions are named in the log; nobody can edit history.</p></div>
+      <div class="card"><h4>If it disappeared tomorrow</h4><p>The database exports to Excel in one click, and every code is printed in plain text on every label. You would lose convenience, not information.</p></div>
+    </div>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="rollout">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 11</span></div>
+    <h2>Getting it into the warehouse</h2>
+    <p class="sub">Eight weeks, and the largest single task is not software.</p>
+
+    <div class="tl">
+      <div class="ph"><span class="w">Week 1</span><h4>Name the warehouse</h4><p>Walk the floor and give every storage place its address. This is the foundation of everything else, it needs your people rather than a developer, and it is the step most likely to be underestimated. Decide what counts as a place: which racks are one pallet, which floor zones hold several.</p></div>
+      <div class="ph"><span class="w">Week 1–2</span><h4>Print and stick the placards</h4><p>The system generates the full sheet of location labels. Two people with a ladder and a roll of tape complete a normal hall in a day. Take photographs of each aisle when finished — they become the map layout.</p></div>
+      <div class="ph"><span class="w">Week 1–4</span><h4>Build the core</h4><p>Create, place, take, close, the map, the log, offline queueing, label printing. Nothing else. The features left out in Part 13 stay out.</p></div>
+      <div class="ph"><span class="w">Week 5</span><h4>Pilot one aisle</h4><p>Two volunteers, one aisle, one week, alongside the current way of working. The goal is not to prove it works; it is to find the three things nobody thought of. Expect to change wording, button size and the order of two screens.</p></div>
+      <div class="ph"><span class="w">Week 6</span><h4>Fix what the pilot found</h4><p>Then load the real product list and register every pallet already standing in the warehouse — the one genuinely tedious day in the project. Do it aisle by aisle, and do not start until the pilot's changes are in.</p></div>
+      <div class="ph"><span class="w">Week 7</span><h4>Go live on the whole floor</h4><p>Ten minutes of training per person, standing at a rack with a phone, not in a meeting room. A printed one-page card in the goods-in area. The wall screen goes up the same day — seeing the map change is what makes people believe it.</p></div>
+      <div class="ph"><span class="w">Week 8 onward</span><h4>Settle into the rhythm</h4><p>The supervisor clears the differences list once a week. After a month of clean running, decide whether batch numbers and expiry dates are worth adding.</p></div>
+    </div>
+
+    <div class="note">
+      <span class="lbl">The one thing that decides success</span>
+      <p>Scanning must be faster than not scanning. If finding a free place through the app is quicker than walking the aisle to look for one, people will scan without being asked. If it is slower, no amount of policy will keep the data true. Every design decision in this document was made with that sentence in mind.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="cost">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 12</span></div>
+    <h2>What it takes</h2>
+    <p class="sub">Estimates, stated as ranges, for planning rather than quoting.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Item</th><th>Estimate</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Building the system</td><td class="num">4–6 weeks</td><td>One developer, full time, including the pilot and its fixes</td></tr>
+          <tr><td>Naming and labelling the warehouse</td><td class="num">2–3 person-days</td><td>Your own staff; the survey is the slow part, sticking labels is fast</td></tr>
+          <tr><td>Registering existing pallets</td><td class="num">1 day</td><td>Two people, aisle by aisle, one-off</td></tr>
+          <tr><td>Hosting</td><td class="num">€5–25 / month</td><td>EU hosting, includes backups. No per-user fees, ever</td></tr>
+          <tr><td>Phones</td><td class="num">€0</td><td>Staff phones or two shared devices you already own</td></tr>
+          <tr><td>Label printing</td><td class="num">€0–300</td><td>Plain paper and pallet pockets work; a small thermal printer is a convenience, not a requirement</td></tr>
+          <tr><td>Training</td><td class="num">10 min / person</td><td>At the rack, with a phone in hand</td></tr>
+          <tr><td>Ongoing supervision</td><td class="num">10 min / week</td><td>Clearing the differences list</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="kicker">Set against this: the search time described in Part 1. If four people each lose twenty minutes a day looking for material, the system pays for itself within the first quarter — and the audit trail is free on top.</p>
+  </div>
+</section>
+<hr class="thin">
+
+<section id="excluded">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 13</span></div>
+    <h2>What is deliberately left out</h2>
+    <p class="sub">A short list of things this system does not do, each with the reason and the door left open.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Left out</th><th>Why</th><th>How it would be added</th></tr></thead>
+        <tbody>
+          <tr><td><b>Batch numbers and expiry dates</b></td><td>They double the work at pallet creation, and location tracking is the problem you actually have today</td><td>Two extra fields on the pallet, a date check that colours ageing pallets. Roughly one week, no redesign. Required if you want this system to carry weight in an ISO 22716 audit.</td></tr>
+          <tr><td><b>Quality control release and quarantine</b></td><td>Adds an approval step and a third role before anyone has used the basic system</td><td>A status on the pallet and a QC sign-in. Sensible only after batches exist.</td></tr>
+          <tr><td><b>Exact stock accounting</b></td><td>Quantities here are approximate by design; making them exact means scanning every carton, which is a different and much heavier system</td><td>Not recommended. Keep exact stock where it already lives.</td></tr>
+          <tr><td><b>Purchase orders and suppliers</b></td><td>That is a purchasing system's job</td><td>An export or a link to whatever you use, rather than a rebuild.</td></tr>
+          <tr><td><b>Automatic put-away suggestions</b></td><td>Useful, but it needs real movement data before its advice is any good</td><td>Add after three months of live data, when the system can suggest from what actually happens.</td></tr>
+          <tr><td><b>Handheld scanner hardware</b></td><td>Phones are enough at your volume</td><td>Any USB or Bluetooth scanner types into the same field. No change needed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">The rule that protects this list</span>
+      <p>Every one of these can be added later precisely because the foundation — unique pallet identity, unique place identity, and a log that is never edited — is built correctly now. Features are cheap to add to an honest foundation and impossible to add to a dishonest one.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="risks">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 14</span></div>
+    <h2>What could go wrong</h2>
+    <p class="sub">Stated plainly, with what is being done about each.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Risk</th><th class="num">Likelihood</th><th>What we do about it</th></tr></thead>
+        <tbody>
+          <tr><td><b>People stop scanning when they are in a hurry</b></td><td class="num">High</td><td>The strongest risk in the project. Countered by speed — two scans, six seconds, and a search that saves more time than scanning costs. Backed by the supervisor's weekly review, which makes gaps visible early rather than after a month.</td></tr>
+          <tr><td><b>Labels get torn, wet or forklift-damaged</b></td><td class="num">High</td><td>Plastic pallet pockets, plain-text codes under every QR, and a one-tap reprint from the pallet's own screen.</td></tr>
+          <tr><td><b>Dead network spots in the racking</b></td><td class="num">Medium</td><td>Offline queueing designed in from day one rather than added later, with the original scan time preserved.</td></tr>
+          <tr><td><b>The registration day is skipped or done badly</b></td><td class="num">Medium</td><td>The system is only as true as the day it starts. Do it aisle by aisle, with two people, and mark each aisle finished on the map as you go.</td></tr>
+          <tr><td><b>Scope creep towards an ERP</b></td><td class="num">Medium</td><td>Part 13 is the defence. Any new request is checked against the four rules in Part 2 before it is accepted.</td></tr>
+          <tr><td><b>Only one person understands the software</b></td><td class="num">Medium</td><td>Deliberately ordinary technology, five tables, and this document. A new developer should be productive in a day.</td></tr>
+          <tr><td><b>The map becomes wrong and people lose faith</b></td><td class="num">Low</td><td>Self-healing corrections — “the rack is actually empty” — plus the weekly differences list, so small errors are fixed by whoever notices them instead of accumulating.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="decisions">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Part 15</span></div>
+    <h2>The decisions, in one place</h2>
+    <p class="sub">Everything agreed during the design conversation, for signing off or arguing with.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Question</th><th>Decision</th></tr></thead>
+        <tbody>
+          <tr><td>How is a pallet identified?</td><td>Your product number plus an automatic counter — <span class="mono">14250-001</span> — printed by the system</td></tr>
+          <tr><td>How is a place identified?</td><td>A permanent placard, aisle-rack-level — <span class="mono">A-01-3</span></td></tr>
+          <tr><td>Do products get their own QR codes?</td><td>No. Product details are entered once, when the pallet is created</td></tr>
+          <tr><td>What does the code contain?</td><td>Only the identifier. Every detail lives in the database</td></tr>
+          <tr><td>What is the scanning order?</td><td>Place first, then pallet — the app accepts either, but teaches this one</td></tr>
+          <tr><td>How many colours on the map?</td><td>Two: green for empty, red for occupied, always with the code shown as well</td></tr>
+          <tr><td>What if only part of a pallet is taken?</td><td>Quantity is edited, the place stays red</td></tr>
+          <tr><td>Are pallet numbers reused?</td><td>Never. Retired on closing, exactly like invoice numbers</td></tr>
+          <tr><td>Batches, expiry, quality control?</td><td>Not in the first version. Designed so they can be added without rework</td></tr>
+          <tr><td>Build or buy?</td><td>Build — the need is one module of a platform, and adoption matters more than features</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What happens next</h3>
+    <ol>
+      <li>Confirm or challenge the decisions above — particularly the counter on the pallet number, and leaving batches out of the first version.</li>
+      <li>Walk the warehouse and count the places. That number sets the size of everything else.</li>
+      <li>Agree the eight-week plan in Part 11, and name the person who will clear the differences list each week.</li>
+      <li>Build, pilot in one aisle, then go live.</li>
+    </ol>
+  </div>
+</section>
+
+<hr class="thin">
+
+<section id="glossary">
+  <div class="col part">
+    <div class="parthead"><span class="partno">Reference</span></div>
+    <h2>Words used in this document</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Term</th><th>Meaning here</th></tr></thead>
+        <tbody>
+          <tr><td><b>Place</b> (or location)</td><td>One addressable storage spot with its own permanent code — a rack slot, a floor square, the goods-in area, or the space beside a production line</td></tr>
+          <tr><td><b>Pallet</b></td><td>One physical loaded pallet with one label. When its goods are gone, the pallet record is closed and the wooden pallet goes back on the stack with no identity</td></tr>
+          <tr><td><b>Licence plate</b></td><td>The warehousing term for a unique code on a physical handling unit, with its contents linked in the database rather than printed on the label. Our pallet number is one</td></tr>
+          <tr><td><b>Event log</b></td><td>The permanent, unerasable list of everything that has happened, with times and names</td></tr>
+          <tr><td><b>Web app / PWA</b></td><td>A website that behaves like an installed app once added to the phone's home screen, including working without signal</td></tr>
+          <tr><td><b>FIFO</b></td><td>First in, first out — using the oldest stock first. Here it falls out of the counting numbers for free</td></tr>
+          <tr><td><b>ISO 22716</b></td><td>The good manufacturing practice standard for cosmetics, which expects designated storage areas, movement records, batch traceability and stock rotation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Sources checked</h3>
+    <ul style="font-family:var(--f-display);font-size:15px">
+      <li><a href="https://www.inventoryops.com/articles/license-plates-in-the-warehouse.html">License Plates in the Warehouse</a> — Inventoryops, on unique identifiers for handling units</li>
+      <li><a href="https://cpcongroup.com/lpn-labeling/">LPN Labeling Guide</a> — CPCON, on linking item, quantity and location to a licence plate</li>
+      <li><a href="https://www.idlabelinc.com/blog/ultimate-guide-to-warehouse-labeling">The Ultimate Guide to Warehouse Labeling</a> — ID Label, on rack and bin labelling practice</li>
+      <li><a href="https://spartanpos.com/pages/warehouse-location-labeling-guide">Warehouse Location Labeling Guide</a> — on zone-aisle-bay-level addressing conventions</li>
+      <li><a href="https://www.registrarcorp.com/blog/cosmetics/iso-22716/iso22716-batch-traceability/">ISO 22716 Batch Traceability</a> and <a href="https://www.registrarcorp.com/blog/cosmetics/iso-22716/iso-22716-raw-materials/">ISO 22716 Raw Materials</a> — Registrar Corp, on storage, movement records and FIFO expectations</li>
+      <li><a href="https://www.business.org/finance/inventory-management/odoo-inventory-management-review/">Odoo Inventory Review 2026</a> — Business.org, on platform capability and per-user pricing</li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API">Barcode Detection API</a> — MDN, on in-browser scanning support</li>
+    </ul>
+
+    <div class="foot">
+      <p>Material Tracking System · Strategic design document · Version 1.0 · 18 August 2026<br>
+      Prepared for Nordic Bio Cosmetic Production Oy. The QR codes in Part 3 are live and scannable; the warehouse map in Part 5 is a working model, not a screenshot.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var AISLES=[["A",["01","02","03","04"]],["B",["01","02","03","04"]],["C",["01","02","03","04"]]];
+  var LEVELS=["1","2"];
+  var PRODUCTS=[["14250","Amber Jar 50 ml"],["18110","Black Cap 28 mm"],["20440","Pump Bottle 200 ml"],["31005","Label Roll, Rose"],["44120","Carton Sleeve A"]];
+  var seq={}, state={}, order=[], logEl, detailEl, selected=null;
+
+  function nextId(p){ seq[p]=(seq[p]||0)+1; return p+"-"+String(seq[p]).padStart(3,"0"); }
+  function stamp(){ var d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0"); }
+
+  function build(){
+    var host=document.getElementById("aisles"); host.textContent="";
+    order=[];
+    AISLES.forEach(function(a){
+      var wrap=document.createElement("div"); wrap.className="aisle";
+      var h=document.createElement("div"); h.className="aisle-name"; h.textContent="Aisle "+a[0];
+      var g=document.createElement("div"); g.className="grid";
+      LEVELS.slice().reverse().forEach(function(lv){
+        a[1].forEach(function(rk){
+          var id=a[0]+"-"+rk+"-"+lv;
+          order.push(id);
+          var b=document.createElement("button");
+          b.type="button"; b.className="cell"; b.dataset.id=id;
+          b.setAttribute("aria-label","Place "+id);
+          g.appendChild(b);
+        });
+      });
+      wrap.appendChild(h); wrap.appendChild(g); host.appendChild(wrap);
+    });
+    host.addEventListener("click",function(e){
+      var b=e.target.closest(".cell"); if(b) toggle(b.dataset.id);
+    });
+  }
+
+  function seed(){
+    state={}; seq={};
+    var picks=["A-01-2","A-03-1","B-02-2","B-04-1","C-01-1","C-03-2"];
+    picks.forEach(function(id){
+      var p=PRODUCTS[Math.floor(Math.random()*PRODUCTS.length)];
+      state[id]={id:nextId(p[0]),prod:p[0],name:p[1],qty:40*(2+Math.floor(Math.random()*5)),by:"opening stock",at:"08:00"};
+    });
+  }
+
+  function toggle(id){
+    selected=id;
+    if(state[id]){
+      var p=state[id]; delete state[id];
+      log("TAKE",p.id,id,"take");
+      detail(id,null,p);
+    }else{
+      var pr=PRODUCTS[Math.floor(Math.random()*PRODUCTS.length)];
+      var pal={id:nextId(pr[0]),prod:pr[0],name:pr[1],qty:40*(2+Math.floor(Math.random()*5)),by:"you",at:stamp()};
+      state[id]=pal; log("PLACE",pal.id,id,"place");
+      detail(id,pal,null);
+    }
+    render();
+  }
+
+  function detail(id,placed,taken){
+    if(placed){
+      detailEl.innerHTML="<strong>"+id+"</strong> now holds <strong>"+placed.id+"</strong><br>"+placed.name+" · "+placed.qty+" pcs<br>placed just now, by you";
+    }else{
+      detailEl.innerHTML="<strong>"+id+"</strong> is now empty<br>"+taken.id+" ("+taken.name+") was taken out<br>the place is offered to the next pallet";
+    }
+  }
+
+  function log(action,pallet,place,cls){
+    var li=document.createElement("li");
+    li.innerHTML='<span class="t">'+stamp()+'</span> <span class="a-'+cls+'">'+action+'</span> '+pallet+' @ '+place;
+    if(logEl.firstChild && logEl.firstChild.className==="t") logEl.textContent="";
+    logEl.insertBefore(li,logEl.firstChild);
+  }
+
+  function render(){
+    document.querySelectorAll(".cell").forEach(function(b){
+      var id=b.dataset.id, p=state[id];
+      b.classList.toggle("occ",!!p);
+      b.classList.toggle("sel",id===selected);
+      b.textContent=p?p.prod:id.slice(2);
+      b.title=p?(id+" — "+p.id+" · "+p.name):(id+" — empty");
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded",init);
+  if(document.readyState!=="loading") init();
+  var started=false;
+  function init(){
+    if(started) return; started=true;
+    logEl=document.getElementById("logbox"); detailEl=document.getElementById("detail");
+    build(); seed(); render();
+    document.getElementById("reset").addEventListener("click",function(){
+      seed(); selected=null; render();
+      logEl.innerHTML='<li class="t">floor reset — waiting for the first scan…</li>';
+      detailEl.textContent="Nothing selected. Click any cell above.";
+    });
+  }
+})();
+</script>

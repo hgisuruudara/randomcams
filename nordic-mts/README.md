@@ -8,6 +8,8 @@ No application code yet; this folder holds the agreed design.
 | Path | What it is |
 |---|---|
 | `docs/strategy.html` | The strategic design document — the full proposal, diagrams, exception handling, rollout and cost. Open it in a browser. |
+| `docs/presentation.html` | An 18-slide pitch deck for a non-technical audience, with live QR codes and a clickable warehouse map. Arrow keys move between slides. |
+| `docs/Nordic-Bio-Pallet-Tracking.pptx` | The same pitch as an editable PowerPoint file, with speaker notes on every slide. |
 | `tools/generate_labels.py` | Generates printable pallet and location labels with real, scannable QR codes. |
 
 ## The design in short

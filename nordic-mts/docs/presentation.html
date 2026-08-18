@@ -1,0 +1,560 @@
+<title>The Pallet Question</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --ink:#101314; --ink-2:#3d4644; --ink-3:#727b77;
+  --paper:#F2F3F0; --surface:#ffffff; --surface-2:#E7E9E4; --rule:#D3D7D0; --rule-strong:#AEB4AC;
+  --accent:#C9990B; --accent-ink:#7a5c00; --accent-wash:#FBF3D8;
+  --green:#1E7A4C; --green-wash:#DCEEE3;
+  --red:#A93B2C; --red-wash:#F6DFDA;
+  --blue:#215B7E; --blue-wash:#DEEAF1;
+  --shadow:0 1px 0 rgba(16,19,20,.04), 0 18px 40px -30px rgba(16,19,20,.6);
+  --f-display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Newsreader",Georgia,serif;
+  --f-mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E7EAE5; --ink-2:#B2B9B4; --ink-3:#848C88;
+    --paper:#101312; --surface:#181C1B; --surface-2:#212625; --rule:#2B3130; --rule-strong:#434A48;
+    --accent:#E6B93C; --accent-ink:#E6B93C; --accent-wash:#2A2314;
+    --green:#5FBF8C; --green-wash:#152B21;
+    --red:#E08272; --red-wash:#2E1A16;
+    --blue:#79B4D6; --blue-wash:#15242D;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 20px 44px -32px rgba(0,0,0,1);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E7EAE5; --ink-2:#B2B9B4; --ink-3:#848C88;
+  --paper:#101312; --surface:#181C1B; --surface-2:#212625; --rule:#2B3130; --rule-strong:#434A48;
+  --accent:#E6B93C; --accent-ink:#E6B93C; --accent-wash:#2A2314;
+  --green:#5FBF8C; --green-wash:#152B21;
+  --red:#E08272; --red-wash:#2E1A16;
+  --blue:#79B4D6; --blue-wash:#15242D;
+  --shadow:0 1px 0 rgba(0,0,0,.4), 0 20px 44px -32px rgba(0,0,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);-webkit-font-smoothing:antialiased}
+
+.deck{height:100svh;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+.slide{min-height:100svh;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;padding:64px 28px 92px;position:relative}
+.inner{max-width:1080px;margin:0 auto;width:100%}
+@media (max-width:700px){.slide{padding:48px 20px 84px}}
+
+.tag{font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin-bottom:20px;display:block}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(38px,7.4vw,84px);line-height:.97;letter-spacing:-.032em;margin:0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:600;font-size:clamp(30px,5vw,56px);line-height:1.03;letter-spacing:-.025em;margin:0 0 .45em;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:clamp(20px,2.4vw,26px);line-height:1.2;margin:0 0 .4em}
+.lede{font-size:clamp(18px,2.1vw,25px);line-height:1.5;color:var(--ink-2);max-width:44ch;margin:.7em 0 0}
+.small{font-size:clamp(15px,1.6vw,18px);color:var(--ink-2);line-height:1.55;max-width:52ch}
+.mono{font-family:var(--f-mono)}
+em{font-style:italic}
+
+/* ---- nav ---- */
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .25s ease}
+.hud{position:fixed;right:16px;bottom:14px;z-index:40;display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:99px;padding:6px 8px 6px 14px;box-shadow:var(--shadow)}
+.hud .n{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.hud button{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule-strong);background:var(--surface);color:var(--ink);cursor:pointer;font-size:14px;line-height:1;display:grid;place-items:center;font-family:var(--f-display)}
+.hud button:hover{background:var(--accent-wash);border-color:var(--accent)}
+.hint{position:fixed;left:16px;bottom:18px;z-index:40;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+button:focus-visible,.cell:focus-visible,a:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px}
+@media (max-width:640px){.hint{display:none}}
+
+/* ---- layout helpers ---- */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:center}
+.split.narrow{grid-template-columns:1.05fr .95fr}
+@media (max-width:860px){.split,.split.narrow{grid-template-columns:1fr;gap:28px}}
+.cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-top:30px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:20px;box-shadow:var(--shadow)}
+.card h4{font-family:var(--f-display);font-size:17px;margin:0 0 6px;font-weight:600}
+.card p{font-family:var(--f-display);font-size:14.5px;line-height:1.5;color:var(--ink-2);margin:0}
+.card .k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;display:block;margin-bottom:9px}
+
+.big-num{font-family:var(--f-display);font-size:clamp(40px,6vw,70px);font-weight:700;line-height:1;letter-spacing:-.03em}
+.big-num span{font-size:.42em;font-weight:500;color:var(--ink-3);letter-spacing:0}
+
+.quote{font-family:var(--f-body);font-size:clamp(22px,3.2vw,34px);line-height:1.35;font-style:italic;max-width:20ch}
+.who{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:18px}
+
+.strip{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.chip{font-family:var(--f-mono);font-size:12.5px;padding:7px 13px;border-radius:99px;border:1px solid var(--rule-strong);background:var(--surface);white-space:nowrap}
+.chip.g{background:var(--green-wash);color:var(--green);border-color:transparent}
+.chip.r{background:var(--red-wash);color:var(--red);border-color:transparent}
+.chip.a{background:var(--accent-wash);color:var(--accent-ink);border-color:transparent}
+</style>
+<style>
+/* ---- label cards ---- */
+.lbl{background:#fff;color:#101314;border:2.5px solid #101314;border-radius:6px;padding:16px;display:flex;gap:15px;align-items:center;box-shadow:var(--shadow)}
+.lbl.loc{border-color:#1E7A4C}
+.lbl .qr{width:92px;flex:0 0 92px}
+.lbl .qr svg{display:block;width:100%;height:auto}
+.lbl .id{font-family:var(--f-display);font-size:36px;font-weight:800;line-height:1;letter-spacing:-.025em}
+.lbl.loc .id{color:#1E7A4C;font-size:31px}
+.lbl .seq{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#6d7673;margin-top:3px}
+.lbl .nm{font-family:var(--f-display);font-size:15px;font-weight:600;margin-top:8px}
+.lbl .mt{font-family:var(--f-display);font-size:13px;color:#3d4644}
+.lbl .ft{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#9aa19d;margin-top:9px}
+.lblstack{display:grid;gap:18px}
+
+/* ---- id anatomy ---- */
+.anat{text-align:center;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:30px 20px 20px;box-shadow:var(--shadow)}
+.anat .big{font-family:var(--f-mono);font-size:clamp(34px,7vw,62px);font-weight:600;line-height:1}
+.anat .big .b{color:var(--accent-ink)}
+.anat .legs{display:flex;justify-content:center;gap:clamp(18px,6vw,70px);margin-top:14px;flex-wrap:wrap}
+.anat .leg{max-width:20ch;font-family:var(--f-display);font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.anat .leg b{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+
+/* ---- steps ---- */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:26px;align-items:stretch}
+.fstep{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:18px;position:relative;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:7px}
+.fstep .no{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--accent-ink);font-weight:600}
+.fstep h4{font-family:var(--f-display);font-size:17.5px;margin:0;font-weight:600;line-height:1.2}
+.fstep p{font-family:var(--f-display);font-size:14px;color:var(--ink-2);margin:0;line-height:1.45}
+.fstep .t{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);margin-top:auto;padding-top:8px}
+
+/* ---- mini map ---- */
+.mapbox{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:20px;box-shadow:var(--shadow)}
+.mapbox .hd{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.mapbox .hd b{font-family:var(--f-display);font-size:15.5px}
+.mrow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.cell{aspect-ratio:1/.78;border:1px solid var(--rule-strong);border-radius:2px;background:var(--green-wash);color:var(--green);font-family:var(--f-mono);font-size:9.5px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .25s ease,transform .18s ease;padding:0}
+.cell.occ{background:var(--red-wash);color:var(--red)}
+.cell.flash{transform:scale(1.09)}
+.cell:hover{transform:translateY(-2px)}
+.maplegend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-family:var(--f-display);font-size:13px;color:var(--ink-2);align-items:center}
+.maplegend i{width:12px;height:12px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px;border:1px solid var(--rule-strong)}
+.play{font-family:var(--f-display);font-size:13.5px;font-weight:500;background:var(--accent-wash);color:var(--accent-ink);border:1px solid var(--accent);border-radius:99px;padding:7px 16px;cursor:pointer}
+.caption{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-top:12px;min-height:1.5em;letter-spacing:.02em}
+
+/* ---- log ---- */
+.logtable{width:100%;border-collapse:collapse;font-family:var(--f-mono);font-size:clamp(11px,1.35vw,14px);background:var(--surface);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.logtable th{text-align:left;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);padding:10px 12px;background:var(--surface-2);border-bottom:1px solid var(--rule-strong);white-space:nowrap}
+.logtable td{padding:10px 12px;border-bottom:1px solid var(--rule);white-space:nowrap}
+.logtable tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto;border-radius:4px}
+.act{padding:2px 8px;border-radius:99px;font-size:.86em}
+.act.pl{background:var(--red-wash);color:var(--red)}
+.act.tk{background:var(--green-wash);color:var(--green)}
+.act.cr{background:var(--blue-wash);color:var(--blue)}
+.act.ed{background:var(--accent-wash);color:var(--accent-ink)}
+
+/* ---- serials ---- */
+.serials{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.ser{font-family:var(--f-mono);font-size:clamp(14px,2vw,19px);padding:11px 16px;border-radius:4px;border:1px solid var(--rule-strong);background:var(--surface)}
+.ser.dead{color:var(--ink-3);text-decoration:line-through;background:transparent;border-style:dashed}
+.ser.live{border-color:var(--red);background:var(--red-wash);color:var(--red)}
+.ser.next{border-color:var(--accent);background:var(--accent-wash);color:var(--accent-ink);font-weight:600}
+
+/* ---- q&a ---- */
+.qa{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));margin-top:26px}
+.qa .item{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:4px;padding:16px 18px}
+.qa .q{font-family:var(--f-display);font-weight:600;font-size:15.5px;margin:0 0 5px}
+.qa .a{font-family:var(--f-display);font-size:14px;color:var(--ink-2);margin:0;line-height:1.5}
+
+/* ---- timeline ---- */
+.weeks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:28px}
+.week{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:17px;border-top:3px solid var(--accent)}
+.week .w{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+.week h4{font-family:var(--f-display);font-size:16.5px;margin:6px 0 5px;font-weight:600}
+.week p{font-family:var(--f-display);font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.45}
+
+/* ---- decide list ---- */
+.decide{display:grid;gap:12px;margin-top:26px}
+.dec{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:15px 18px}
+.dec .n{font-family:var(--f-mono);font-size:13px;color:var(--accent-ink);font-weight:600;padding-top:2px}
+.dec p{margin:0;font-family:var(--f-display);font-size:15.5px;line-height:1.45}
+.dec p b{font-weight:600}
+</style>
+<style>
+.form{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:20px;box-shadow:var(--shadow);max-width:430px}
+.form .k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;display:block;margin-bottom:14px}
+.frow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dotted var(--rule);font-family:var(--f-display);font-size:14.5px}
+.frow span{color:var(--ink-3)}
+.frow b{font-weight:600}
+.fin{font-family:var(--f-mono);font-size:14px;background:var(--surface-2);border:1px solid var(--rule-strong);border-radius:3px;padding:5px 10px}
+.fauto{font-family:var(--f-display);font-size:14.5px;color:var(--green);font-weight:600}
+.fadd{font-family:var(--f-display);font-size:13.5px;color:var(--accent-ink);margin-top:12px}
+.fbtn{margin-top:14px;background:var(--green);color:var(--surface);border-radius:4px;text-align:center;padding:11px;font-family:var(--f-display);font-weight:600;font-size:15px}
+.answer{background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:18px 20px;box-shadow:var(--shadow);max-width:460px}
+.ansrow{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px dotted var(--rule);font-family:var(--f-mono);font-size:14px}
+.ansrow:last-child{border-bottom:0}
+.ansrow .old{color:var(--accent-ink);font-family:var(--f-display);font-size:12.5px;font-weight:600}
+.searchbar{font-family:var(--f-mono);font-size:15px;background:var(--surface-2);border:1px solid var(--rule-strong);border-radius:99px;padding:11px 18px;display:inline-block;margin-bottom:14px}
+</style>
+
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<section class="slide"><div class="inner">
+  <span class="tag">Nordic Bio Cosmetic Production Oy &nbsp;·&nbsp; Proposal &nbsp;·&nbsp; August 2026</span>
+  <h1>Where is that pallet?</h1>
+  <p class="lede">A simple system that always knows the answer — and remembers who moved it, and when.</p>
+  <div class="strip">
+    <span class="chip a">2 stickers</span>
+    <span class="chip a">2 scans</span>
+    <span class="chip a">1 honest record</span>
+  </div>
+  <p class="small" style="margin-top:34px;color:var(--ink-3)">18 slides · press the arrow keys, or scroll</p>
+</div></section>
+
+<section class="slide"><div class="inner split narrow">
+  <div>
+    <span class="tag">Slide 2 · Tuesday, 09:14</span>
+    <p class="quote">“I know we have amber jars somewhere. I just don't know where.”</p>
+    <p class="who">Mikael, warehouse</p>
+  </div>
+  <div>
+    <p class="small">He walks aisle A. Then aisle C. He climbs to check the top level. Twenty minutes later he gives up and tells the office the jars are finished.</p>
+    <p class="small"><strong>They were not finished.</strong> A pallet of 4 800 jars was standing in aisle B, where somebody put it last Thursday because aisle A was full that day.</p>
+    <p class="small">Nobody did anything wrong. The information simply lived in one person's head, and that person was on holiday.</p>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 3 · What that costs</span>
+  <h2>Four quiet losses</h2>
+  <div class="cards">
+    <div class="card"><div class="big-num">20 <span>min/day</span></div><p style="margin-top:10px">Every person, every day, spent walking and looking instead of working.</p></div>
+    <div class="card"><div class="big-num">2×</div><p style="margin-top:10px">Material ordered again because the first pallet could not be found.</p></div>
+    <div class="card"><div class="big-num">Oldest<br><span>at the back</span></div><p style="margin-top:10px">The newest pallet is always the easiest to reach, so the old one quietly ages.</p></div>
+    <div class="card"><div class="big-num">No<br><span>history</span></div><p style="margin-top:10px">When something goes wrong, nobody can say what happened, or when.</p></div>
+  </div>
+  <p class="small" style="margin-top:28px">None of these is dramatic on any single day. Together, they are the reason the warehouse feels busy without getting more done.</p>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 4 · The idea</span>
+  <h2>Give every shelf a house number.<br>Give every pallet a name tag.</h2>
+  <p class="lede">Then a phone camera can connect the two in six seconds — and the warehouse can answer questions instead of guessing.</p>
+  <div class="strip">
+    <span class="chip">No new equipment</span>
+    <span class="chip">No app to install</span>
+    <span class="chip">No change to how pallets are moved</span>
+    <span class="chip">10 minutes of training</span>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner split">
+  <div>
+    <span class="tag">Slide 5 · The two stickers</span>
+    <h2>This is the whole system.</h2>
+    <p class="small">One sticker sits on the rack forever. One label is printed when a pallet is created and thrown away when the pallet is empty.</p>
+    <p class="small"><strong>These two codes are real.</strong> Point your phone camera at them right now — the phone will read out <span class="mono">14250-001</span> and <span class="mono">LOC-A-01-3</span>. That is everything the app needs.</p>
+  </div>
+  <div class="lblstack">
+    <div class="lbl">
+      <div class="qr"><svg preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 76"><path transform="scale(4)" stroke="#101314" d="M2 2.5h7m1 0h1m1 0h1m1 0h1m1 0h1m-15 1h1m5 0h1m1 0h2m1 0h1m1 0h2m-15 1h1m1 0h3m1 0h1m1 0h2m1 0h4m-15 1h1m1 0h3m1 0h1m1 0h1m1 0h1m-11 1h1m1 0h3m1 0h1m2 0h4m1 0h1m-15 1h1m5 0h1m2 0h1m3 0h2m-15 1h7m2 0h2m0 1h1m-12 1h1m3 0h1m2 0h2m2 0h2m1 0h1m-14 1h1m7 0h1m1 0h1m-12 1h2m2 0h1m1 0h1m5 0h3m-12 1h7m3 0h2m-15 1h2m2 0h1m3 0h1m1 0h1m1 0h3m-12 1h2m2 0h1m1 0h3m2 0h1m-15 1h1m2 0h5m2 0h1m1 0h2"/></svg>
+</div>
+      <div>
+        <div class="id">14250</div><div class="seq">pallet 001</div>
+        <div class="nm">Amber Jar 50 ml</div>
+        <div class="mt">120 pcs · + 1 more item</div>
+        <div class="ft">Nordic Bio · 18.08.2026 · M.K.</div>
+      </div>
+    </div>
+    <div class="lbl loc">
+      <div class="qr"><svg preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 76"><path transform="scale(4)" stroke="#101314" d="M2 2.5h7m1 0h1m1 0h1m1 0h1m1 0h1m-15 1h1m5 0h1m3 0h1m2 0h1m-14 1h1m1 0h3m1 0h1m1 0h3m3 0h1m-15 1h1m1 0h3m1 0h1m1 0h1m2 0h2m-13 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-15 1h1m5 0h1m1 0h4m2 0h1m-15 1h7m2 0h3m1 0h1m-6 1h1m-9 1h1m4 0h2m1 0h5m1 0h1m-13 1h2m1 0h1m8 0h1m-15 1h2m6 0h5m-11 1h1m1 0h3m1 0h1m2 0h1m1 0h1m-14 1h1m1 0h1m2 0h6m2 0h1m-12 1h2m2 0h1m5 0h1m1 0h1m-15 1h3m2 0h2m1 0h1m3 0h1m1 0h1"/></svg>
+</div>
+      <div>
+        <div class="id">A-01-3</div><div class="seq">location</div>
+        <div class="nm">Aisle A · Rack 01 · Level 3</div>
+        <div class="mt">holds 1 pallet</div>
+        <div class="ft">Nordic Bio · permanent placard</div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 6 · The pallet number</span>
+  <h2>Your own product number, plus a counter.</h2>
+  <div class="anat" style="margin-top:26px">
+    <div class="big">14250<span class="b">-001</span></div>
+    <div class="legs">
+      <div class="leg"><b>Your product number</b>Typed once. The name appears by itself.</div>
+      <div class="leg"><b>Added by the system</b>“The first pallet of 14250 we ever had.” Nobody types this.</div>
+    </div>
+  </div>
+  <p class="small" style="margin-top:26px">Staff read it as <em>“a pallet of 14250”</em> — exactly how they already speak. The three extra digits are what let the system tell three identical pallets apart, which is the difference between knowing and guessing.</p>
+</div></section>
+
+<section class="slide"><div class="inner split">
+  <div>
+    <span class="tag">Slide 7 · Example one</span>
+    <h2>A delivery arrives.</h2>
+    <p class="small">Mikael opens the app and fills in three things. The product name appears by itself as soon as he types the number — so nobody can spell the same jar two different ways.</p>
+    <p class="small">He presses <strong>Create pallet</strong>. The system prints a label. He slips it into the plastic pocket on the pallet.</p>
+    <p class="small mono" style="color:var(--ink-3)">ELAPSED: ABOUT 30 SECONDS</p>
+  </div>
+  <div class="form">
+    <span class="k">Create pallet</span>
+    <div class="frow"><span>Product ID</span><span class="fin">14250</span></div>
+    <div class="frow"><span>Name</span><span class="fauto">Amber Jar 50 ml ✓</span></div>
+    <div class="frow"><span>Quantity</span><span class="fin">120 pcs</span></div>
+    <div class="fadd">+ Add another product to this pallet</div>
+    <div class="fbtn">Create pallet &amp; print label</div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 8 · Example two</span>
+  <h2>Putting it on the shelf.</h2>
+  <div class="flow">
+    <div class="fstep"><span class="no">STEP 1</span><h4>Scan the shelf</h4><p>Point the phone at the sticker on the rack beam.</p><span class="t">2 seconds</span></div>
+    <div class="fstep"><span class="no">STEP 2</span><h4>Scan the pallet</h4><p>Point it at the label in the pallet pocket.</p><span class="t">2 seconds</span></div>
+    <div class="fstep"><span class="no">STEP 3</span><h4>Confirm</h4><p>The screen shows what is about to happen. One tap.</p><span class="t">2 seconds</span></div>
+    <div class="fstep" style="border-color:var(--red)"><span class="no" style="color:var(--red)">RESULT</span><h4>The shelf turns red</h4><p>On every screen in the building, within a second.</p><span class="t">instant</span></div>
+  </div>
+  <p class="small" style="margin-top:26px">Nothing is saved until both scans are done. If someone is interrupted halfway, the app forgets it after ninety seconds and records nothing at all.</p>
+</div></section>
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 9 · The screen on the office wall</span>
+  <h2>Green means free. Red means full.</h2>
+  <div class="mapbox" style="margin-top:22px">
+    <div class="hd">
+      <b>Aisle A — live</b>
+      <button class="play" id="play" type="button">▶ Show me an example</button>
+    </div>
+    <div class="mrow" id="mrow"></div>
+    <div class="maplegend">
+      <span><i style="background:var(--green-wash);border-color:var(--green)"></i>Empty — ready for a pallet</span>
+      <span><i style="background:var(--red-wash);border-color:var(--red)"></i>Occupied</span>
+      <span style="margin-left:auto;color:var(--ink-3)">click any square yourself</span>
+    </div>
+    <div class="caption" id="cap">Press the button and watch a pallet arrive, then leave.</div>
+  </div>
+  <p class="small" style="margin-top:22px">Every square is one shelf place, with its code written on it. Click one and you see what is standing there, who put it there, and when.</p>
+</div></section>
+
+<section class="slide"><div class="inner split">
+  <div>
+    <span class="tag">Slide 10 · Example three</span>
+    <h2>Production needs the jars.</h2>
+    <p class="small">Anna walks to A-01-3, scans the shelf, scans the pallet, taps <strong>Take</strong>. The square turns green again and is immediately offered to the next pallet that needs a home.</p>
+    <p class="small">If she brings it back with 60 jars left, she puts it anywhere that is green and does the same two scans. The system does not mind where — it only wants to know.</p>
+  </div>
+  <div class="flow" style="grid-template-columns:1fr">
+    <div class="fstep"><span class="no">09:41</span><h4>Scan shelf + pallet → Take</h4><p>A-01-3 turns green. The pallet is now “in Anna's hands”, not lost.</p></div>
+    <div class="fstep"><span class="no">13:20</span><h4>Back with 60 jars</h4><p>She scans B-02-1 and the pallet. B-02-1 turns red. Quantity updated.</p></div>
+    <div class="fstep"><span class="no">FRIDAY</span><h4>Last jars used</h4><p>She taps <strong>Close</strong>. The shelf turns green, the label goes in the bin.</p></div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner split">
+  <div>
+    <span class="tag">Slide 11 · Example four</span>
+    <h2>“Where are the amber jars?”</h2>
+    <p class="small">Type the name or the number. Every place holding it appears, oldest pallet first — so the right one to take is always at the top of the list.</p>
+    <p class="small">This is the change people notice in the first week. Twenty minutes of walking becomes three seconds of typing.</p>
+  </div>
+  <div>
+    <div class="searchbar">🔍 amber jar</div>
+    <div class="answer">
+      <div class="ansrow"><span>14250-004 · A-01-3</span><span class="old">oldest — take this</span></div>
+      <div class="ansrow"><span>14250-005 · B-02-1</span><span style="color:var(--ink-3)">120 pcs</span></div>
+      <div class="ansrow"><span>14250-007 · C-03-2</span><span style="color:var(--ink-3)">120 pcs</span></div>
+    </div>
+    <p class="small" style="margin-top:16px;color:var(--ink-3)">Three pallets, three places, one glance.</p>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 12 · The memory</span>
+  <h2>Every action is written down. Nothing is ever erased.</h2>
+  <div class="tw" style="margin-top:22px">
+    <table class="logtable">
+      <thead><tr><th>Time</th><th>Person</th><th>Action</th><th>Pallet</th><th>Place</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>18.08 08:10</td><td>Mikael K.</td><td><span class="act cr">CREATE</span></td><td>14250-004</td><td>—</td><td>120 pcs, label printed</td></tr>
+        <tr><td>18.08 08:25</td><td>Mikael K.</td><td><span class="act pl">PLACE</span></td><td>14250-004</td><td>A-01-3</td><td>from goods-in</td></tr>
+        <tr><td>20.08 13:40</td><td>Anna L.</td><td><span class="act tk">TAKE</span></td><td>14250-004</td><td>A-01-3</td><td>to line 2</td></tr>
+        <tr><td>20.08 16:05</td><td>Anna L.</td><td><span class="act ed">EDIT</span></td><td>14250-004</td><td>—</td><td>120 → 60 pcs used</td></tr>
+        <tr><td>20.08 16:06</td><td>Anna L.</td><td><span class="act pl">PLACE</span></td><td>14250-004</td><td>B-02-1</td><td>returned, nearer slot</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small" style="margin-top:24px">Six months from now, “where was this pallet on 20 August, and who moved it?” takes five seconds to answer — and the answer is exportable to Excel for an auditor.</p>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 13 · A small but important detail</span>
+  <h2>Pallet numbers work like invoice numbers.</h2>
+  <p class="lede">They count upwards. They are never reused, even after a pallet is finished.</p>
+  <div class="serials">
+    <span class="ser dead">14250-001</span>
+    <span class="ser dead">14250-002</span>
+    <span class="ser dead">14250-003</span>
+    <span class="ser live">14250-004</span>
+    <span class="ser live">14250-005</span>
+    <span class="ser next">14250-006 ← next one</span>
+  </div>
+  <p class="small" style="margin-top:26px">Crossed out means finished and gone. Red means standing in the warehouse right now. Because numbers only go up, <strong>the lowest number is always the oldest pallet</strong> — so “take the lowest number first” keeps stock rotating properly, with nothing to learn and nothing to configure.</p>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 14 · The obvious objections</span>
+  <h2>“But what if…?”</h2>
+  <div class="qa">
+    <div class="item"><p class="q">The label gets torn off?</p><p class="a">The code is also printed in plain letters. Type it, or reprint the label in one tap.</p></div>
+    <div class="item"><p class="q">There's no wifi in that aisle?</p><p class="a">The phone keeps the scans and sends them the moment there is signal. The worker notices nothing.</p></div>
+    <div class="item"><p class="q">Someone puts a pallet in a full shelf?</p><p class="a">The app stops them and offers the nearest free place instead. One of only two things it ever refuses.</p></div>
+    <div class="item"><p class="q">Somebody forgets to scan?</p><p class="a">The next person who finds the shelf empty taps “this rack is actually empty”, and the system corrects itself.</p></div>
+    <div class="item"><p class="q">Wrong button pressed?</p><p class="a">Undo for a minute. After that the correction is added as a new line — the mistake stays visible, which is the point.</p></div>
+    <div class="item"><p class="q">The system goes down?</p><p class="a">Phones keep collecting scans. Every code is readable by eye, and the map can be printed each morning.</p></div>
+  </div>
+  <p class="small" style="margin-top:24px">Twenty-eight situations like these are written down and answered in the full design document. The rule behind all of them: <strong>never stop the forklift — record what really happened and move on.</strong></p>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 15 · What changes</span>
+  <h2>Three people, three different days.</h2>
+  <div class="cards">
+    <div class="card"><span class="k">Warehouse</span><h4>Six seconds per move</h4><p>Two scans instead of remembering. In exchange: never searching again, and never being blamed for a pallet somebody else moved.</p></div>
+    <div class="card"><span class="k">Supervisor</span><h4>Ten minutes a week</h4><p>One screen shows anything the system could not resolve by itself — usually three or four items. Everything else runs without them.</p></div>
+    <div class="card"><span class="k">Management</span><h4>Questions become answers</h4><p>How full is the warehouse? Where is that material? Who moved it? What did we not use for a year? All on one screen.</p></div>
+  </div>
+  <p class="small" style="margin-top:26px">Nobody is asked to fill in a form, keep a spreadsheet, or write anything down. The record is a by-product of doing the job.</p>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 16 · What it takes</span>
+  <h2>Eight weeks, and one afternoon with a ladder.</h2>
+  <div class="weeks">
+    <div class="week"><span class="w">Weeks 1–2</span><h4>Name the warehouse</h4><p>Give every shelf place an address, print the stickers, put them up. Your own staff, two days.</p></div>
+    <div class="week"><span class="w">Weeks 1–4</span><h4>Build the system</h4><p>Scanning, the map, the log, the labels. Nothing else.</p></div>
+    <div class="week"><span class="w">Weeks 5–6</span><h4>Try one aisle</h4><p>Two volunteers, one week, alongside the old way. Fix what they find.</p></div>
+    <div class="week"><span class="w">Week 7</span><h4>Go live</h4><p>Ten minutes of training each, standing at a rack with a phone in hand.</p></div>
+  </div>
+  <div class="cards" style="margin-top:20px">
+    <div class="card"><div class="big-num">€5–25<span> /month</span></div><p style="margin-top:8px">Running cost. No licence per person, ever.</p></div>
+    <div class="card"><div class="big-num">€0<span> hardware</span></div><p style="margin-top:8px">The phones people already carry. A label printer is optional.</p></div>
+    <div class="card"><div class="big-num">10<span> min</span></div><p style="margin-top:8px">Training per person. The app has three screens.</p></div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner split">
+  <div>
+    <span class="tag">Slide 17 · The fair question</span>
+    <h2>Why not just buy something?</h2>
+    <p class="small">You can. Odoo, Fishbowl and others do this — as one part of a much larger platform that also does purchasing, stock valuation and sales orders, at roughly €30–60 per person per month once you go past the free tier.</p>
+    <p class="small"><strong>The real cost is not the licence, it is the learning.</strong> To get the one piece we need, everyone on the floor has to learn all of it.</p>
+    <p class="small">If Nordic Bio plans to move purchasing and accounting into one system anyway, buy the platform. If the need is “know where the pallets are”, a purpose-built tool will be understood by everyone by Wednesday of the first week — and that, not the feature list, is what makes the data true.</p>
+  </div>
+  <div class="cards" style="grid-template-columns:1fr;margin-top:0">
+    <div class="card"><span class="k">Buy a platform</span><h4>Six modules to get one</h4><p>Purchase orders · valuation · sales · <strong>locations &amp; scanning</strong> · lots &amp; serials · reporting. Per-user fees. Months of adoption.</p></div>
+    <div class="card" style="border-color:var(--accent)"><span class="k">Build this</span><h4>One module, shaped to your warehouse</h4><p><strong>Locations &amp; scanning</strong> · live map · permanent log. One build, then a few euros a month. Two scans to learn.</p></div>
+  </div>
+</div></section>
+
+<section class="slide"><div class="inner">
+  <span class="tag">Slide 18 · Over to you</span>
+  <h2>Three things to decide.</h2>
+  <div class="decide">
+    <div class="dec"><span class="n">01</span><p><b>Is the pallet label acceptable?</b> One printed label per pallet, in a plastic pocket — the only new habit this asks for.</p></div>
+    <div class="dec"><span class="n">02</span><p><b>Do we start without batch numbers and expiry dates?</b> Recommended: yes, they can be added later without rebuilding anything. Needed if this system should ever carry weight in a cosmetics GMP audit.</p></div>
+    <div class="dec"><span class="n">03</span><p><b>Who walks the warehouse and counts the shelf places?</b> That number decides the size of everything else, and it is the first job.</p></div>
+  </div>
+  <p class="lede" style="margin-top:34px">Then eight weeks later, nobody in this building has to wonder where a pallet is again.</p>
+  <p class="small" style="margin-top:26px;color:var(--ink-3)">Full design document — workflow, all 28 exceptions, data model, architecture, rollout and costs — available alongside this presentation.</p>
+</div></section>
+
+</div>
+
+<div class="hud">
+  <span class="n" id="counter">1 / 18</span>
+  <button id="prev" type="button" aria-label="Previous slide">↑</button>
+  <button id="next" type="button" aria-label="Next slide">↓</button>
+</div>
+<div class="hint">← → or ↑ ↓ to move</div>
+<style>@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}</style>
+<script>
+(function(){
+  var deck=document.getElementById("deck");
+  var slides=Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var counter=document.getElementById("counter");
+  var progress=document.getElementById("progress");
+  var current=0;
+
+  function go(i){
+    current=Math.max(0,Math.min(slides.length-1,i));
+    slides[current].scrollIntoView({block:"start"});
+    paint();
+  }
+  function paint(){
+    counter.textContent=(current+1)+" / "+slides.length;
+    progress.style.width=((current)/(slides.length-1)*100)+"%";
+  }
+  document.getElementById("next").addEventListener("click",function(){go(current+1)});
+  document.getElementById("prev").addEventListener("click",function(){go(current-1)});
+  window.addEventListener("keydown",function(e){
+    if(["ArrowRight","ArrowDown","PageDown"," "].indexOf(e.key)>-1){e.preventDefault();go(current+1)}
+    else if(["ArrowLeft","ArrowUp","PageUp"].indexOf(e.key)>-1){e.preventDefault();go(current-1)}
+    else if(e.key==="Home"){e.preventDefault();go(0)}
+    else if(e.key==="End"){e.preventDefault();go(slides.length-1)}
+  });
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting && en.intersectionRatio>0.55){
+          current=slides.indexOf(en.target); paint();
+        }
+      });
+    },{root:deck,threshold:[0.56]});
+    slides.forEach(function(s){io.observe(s)});
+  }
+  paint();
+
+  /* ---- mini map ---- */
+  var CELLS=[], row=document.getElementById("mrow"), cap=document.getElementById("cap");
+  var LEVELS=["3","2"], BAYS=["01","02","03","04","05","06"];
+  var occupied={"A-01-3":"18110-004","A-05-3":"20440-002","A-02-2":"31005-001","A-06-2":"14250-005"};
+  LEVELS.forEach(function(lv){
+    BAYS.forEach(function(b){
+      var id="A-"+b+"-"+lv;
+      var el=document.createElement("button");
+      el.type="button"; el.className="cell"; el.dataset.id=id; el.setAttribute("aria-label","Shelf place "+id);
+      el.addEventListener("click",function(){
+        if(occupied[id]){ var p=occupied[id]; delete occupied[id]; cap.textContent=id+" — "+p+" taken out. The place is free again."; }
+        else { occupied[id]="14250-006"; cap.textContent=id+" — pallet 14250-006 placed here. The place is now occupied."; }
+        draw();
+      });
+      row.appendChild(el); CELLS.push(el);
+    });
+  });
+  function draw(){
+    CELLS.forEach(function(el){
+      var id=el.dataset.id, p=occupied[id];
+      el.classList.toggle("occ",!!p);
+      el.textContent=id.slice(2);
+      el.title=p?(id+" — "+p):(id+" — empty");
+    });
+  }
+  draw();
+
+  var timers=[], playing=false;
+  document.getElementById("play").addEventListener("click",function(){
+    if(playing) return; playing=true;
+    timers.forEach(clearTimeout); timers=[];
+    delete occupied["A-03-3"]; draw();
+    var target=CELLS.filter(function(c){return c.dataset.id==="A-03-3"})[0];
+    function step(ms,fn){ timers.push(setTimeout(fn,ms)); }
+    cap.textContent="Monday 08:25 — Mikael scans shelf A-03-3, then pallet 14250-004…";
+    target.classList.add("flash");
+    step(1300,function(){
+      occupied["A-03-3"]="14250-004"; draw(); target.classList.remove("flash");
+      cap.textContent="…done. A-03-3 now holds 14250-004 — Amber Jar 50 ml, 120 pcs.";
+    });
+    step(3100,function(){
+      cap.textContent="Wednesday 13:40 — production needs the jars. Anna scans and taps Take…";
+      target.classList.add("flash");
+    });
+    step(4400,function(){
+      delete occupied["A-03-3"]; draw(); target.classList.remove("flash");
+      cap.textContent="…and A-03-3 is green again, offered to the next pallet that needs a home.";
+    });
+    step(6600,function(){ playing=false; });
+  });
+})();
+</script>

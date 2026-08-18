@@ -283,7 +283,7 @@ footer.docfoot{border-top:2px solid var(--ink);margin-top:70px;padding-top:22px;
       <li><a href="#s07"><span class="n">07</span><span>The warehouse model</span></a></li>
       <li><a href="#s08"><span class="n">08</span><span>The map on the screen</span></a></li>
       <li><a href="#s09"><span class="n">09</span><span>The movement protocol</span></a></li>
-      <li><a href="#s10"><span class="n">10</span><span>Proving a slot is empty</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>The double confirmation</span></a></li>
       <li><a href="#s11"><span class="n">11</span><span>Three scenes on the floor</span></a></li>
       <li><a href="#s12"><span class="n">12</span><span>Self-healing inventory</span></a></li>
       <li class="grp">The hard parts</li>
@@ -338,15 +338,15 @@ footer.docfoot{border-top:2px solid var(--ink);margin-top:70px;padding-top:22px;
     <li><strong>A code per location, printed on rack beams and floor markers</strong>, following a naming scheme a new employee can read without training (section&nbsp;07).</li>
     <li><strong>A live graphical map</strong> of the warehouse on any screen: floor plan, rack elevations, colour-coded by occupancy and material status, click a slot to see exactly which pallet, which batch, since when, put there by whom (section&nbsp;08).</li>
     <li><strong>A two-scan movement protocol</strong> &mdash; scan location, scan pallet, both ends of the journey &mdash; where a pallet is never &ldquo;nowhere&rdquo;: between pick and put it is held in the operator&rsquo;s own custody, which is itself an address (section&nbsp;09).</li>
-    <li><strong>Physical proof of vacancy.</strong> A second sticker at the back of each slot, hidden by any pallet standing in it, means &ldquo;this slot is empty&rdquo; can be <em>proved with the camera</em> rather than merely ticked on a screen. This is our answer to the double confirmation you asked for, and we believe it is genuinely unusual (section&nbsp;10).</li>
+    <li><strong>Double confirmation at both ends of every move.</strong> A movement settles two places, not one. The slot the pallet <em>left</em> is never assumed empty: the record must be updated with whatever stands there now &mdash; the next pallet, scanned in &mdash; or the slot must be proved empty by scanning a seal at the back of it that any pallet would cover. Until one of those happens the slot carries an open obligation with a clock on it, and no one is sent to it. The slot the pallet <em>goes to</em> is checked the same way before the pallet is committed (section&nbsp;10).</li>
     <li><strong>Self-healing inventory.</strong> Every scan corrects the record it touches. A pallet found where the system did not expect it is adopted into that location on the spot, with an exception logged &mdash; not silently overwritten and not blocked (section&nbsp;12).</li>
-    <li><strong>An exception catalogue of 48 named failure modes</strong>, each with how the system detects it, what it does, and who resolves it (section&nbsp;13). This is the part most warehouse projects discover after go-live. We would rather design it first.</li>
+    <li><strong>An exception catalogue of 52 named failure modes</strong>, each with how the system detects it, what it does, and who resolves it (section&nbsp;13). This is the part most warehouse projects discover after go-live. We would rather design it first.</li>
   </ul>
 
   <div class="stat">
     <div><span class="v">2</span><span class="l">scans to complete a move</span></div>
     <div><span class="v">0</span><span class="l">moments where a pallet has no address</span></div>
-    <div><span class="v">48</span><span class="l">named exceptions handled by design</span></div>
+    <div><span class="v">52</span><span class="l">named exceptions handled by design</span></div>
     <div><span class="v">~14</span><span class="l">weeks to a fully live warehouse</span></div>
   </div>
 
@@ -429,7 +429,7 @@ footer.docfoot{border-top:2px solid var(--ink);margin-top:70px;padding-top:22px;
     <figcaption><b>Fig 01</b> Two scans make one binding. The pallet code answers &ldquo;what is this?&rdquo;, the location code answers &ldquo;where am I standing?&rdquo;, and the binding &mdash; the only thing the system truly stores &mdash; answers &ldquo;where is it?&rdquo; Everything the warehouse sees on a screen is derived from bindings.</figcaption>
   </figure>
 
-  <p>A move is therefore just two things happening in order: a binding ends (you lifted the pallet), and a new binding begins (you set it down). Section&nbsp;09 turns that into a protocol that survives interruptions, wrong scans, dead batteries and the pallet that was already in the slot you wanted.</p>
+  <p>A move is therefore three things, not two: a binding ends (you lifted the pallet), a new binding begins (you set it down), and the place you took it from gets an answer to the question every departure raises &mdash; <em>so what is in there now?</em> Sections&nbsp;09 and&nbsp;10 turn that into a protocol that survives interruptions, wrong scans, dead batteries, and the pallet that was already in the slot you wanted.</p>
 </section>
 
 <section id="s03">
@@ -789,6 +789,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <tr><td><strong>Floor block</strong></td><td class="num">n (e.g. 6)</td><td>A painted square holding several pallets. Tracks a count and a set, not a single binding; no seal &mdash; vacancy is proved by counting.</td><td class="mono">F-BULK-02</td></tr>
         <tr><td><strong>Staging lane</strong></td><td class="num">n, ordered</td><td>First in, first out by position. The app knows which pallet is at the mouth of the lane.</td><td class="mono">IN-LANE-1</td></tr>
         <tr><td><strong>Controlled area</strong></td><td class="num">n</td><td>Quarantine cage, reject cage, cold room. Entry and exit require a role, not just a scan.</td><td class="mono">Q-CAGE</td></tr>
+        <tr><td><strong>Obligation</strong></td><td>The open question a departing pallet leaves behind: what is in that slot now? Closed by a successor pallet, a seal scan or a count</td></tr>
         <tr><td><strong>Point of use</strong></td><td class="num">1&ndash;2</td><td>Beside a filling or capping line. Pallets here are being consumed; quantity ticks down.</td><td class="mono">POU-LINE-2</td></tr>
       </tbody>
     </table>
@@ -798,7 +799,13 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
   <h3>The map</h3>
 
   <figure>
-    <svg viewBox="0 0 900 560" role="img" aria-label="Top-down warehouse floor plan showing goods-in dock, quarantine cage, inbound staging lanes, five racking rows A to E, a bulk floor block zone, production feed points, finished goods racking, outbound staging and the dispatch dock, with slots colour-coded by state.">
+    <svg viewBox="0 0 900 590" role="img" aria-label="Top-down warehouse floor plan showing goods-in dock, quarantine cage, inbound staging lanes, five racking rows A to E, a bulk floor block zone, production feed points, finished goods racking, outbound staging and the dispatch dock, with slots colour-coded by state.">
+      <defs>
+        <pattern id="hatch-f4" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="7" height="7" fill="var(--panel)"></rect>
+          <line x1="0" y1="0" x2="0" y2="7" stroke="var(--warn)" stroke-width="1.8"></line>
+        </pattern>
+      </defs>
       <g font-family="IBM Plex Mono, monospace" fill="currentColor">
         <!-- building -->
         <rect x="28" y="38" width="844" height="444" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
@@ -920,6 +927,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="196" y="284" font-size="13" font-weight="600" text-anchor="end">E</text>
         <rect x="204" y="266" width="440" height="26" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
         <rect x="204" y="266" width="55" height="26" fill="var(--ok-soft)"></rect>
+        <rect x="314" y="266" width="55" height="26" fill="url(#hatch-f4)"></rect>
         <rect x="369" y="266" width="55" height="26" fill="var(--ok-soft)"></rect>
         <rect x="424" y="266" width="55" height="26" fill="var(--ok-soft)"></rect>
         <rect x="589" y="266" width="55" height="26" fill="var(--ok-soft)"></rect>
@@ -1016,10 +1024,12 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="584" y="523" font-size="10">reserved / in transit</text>
         <rect x="722" y="512" width="16" height="13" fill="var(--crit-soft)" stroke="var(--crit)" stroke-width="1.6"></rect>
         <text x="744" y="523" font-size="10">contested or blocked</text>
-        <text x="28" y="546" font-size="9.5" opacity=".55">Layout is illustrative &mdash; the real register is built from the site survey in phase 0 and drawn to scale from it.</text>
+        <rect x="118" y="540" width="16" height="13" fill="url(#hatch-f4)" stroke="var(--warn)" stroke-width=".9"></rect>
+        <text x="140" y="551" font-size="10">believed empty &mdash; nobody has looked since the pallet left, clock running (&sect;10)</text>
+        <text x="28" y="578" font-size="9.5" opacity=".55">Layout is illustrative &mdash; the real register is built from the site survey in phase 0 and drawn to scale from it.</text>
       </g>
     </svg>
-    <figcaption><b>Fig 04</b> The warehouse as the system sees it. Every rectangle is a record with a code, a capacity and a rule about what may stand there. The five colours are the same five colours used on the live screen, on the printed labels&rsquo; status band, and in every report &mdash; one colour language across the whole system.</figcaption>
+    <figcaption><b>Fig 04</b> The warehouse as the system sees it. Every rectangle is a record with a code, a capacity and a rule about what may stand there. The five colours, and the hatch that means &ldquo;nobody has looked since the pallet left&rdquo;, are the same marks used on the live screen, on the printed labels&rsquo; status band, and in every report &mdash; one visual language across the whole system.</figcaption>
   </figure>
 
   <h3>Reading a location code from the aisle</h3>
@@ -1129,7 +1139,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
   </div>
 
   <h3>The colour language, and why colour is never alone</h3>
-  <p>Five states, five colours, used identically everywhere: <span class="pill">free</span> <span class="pill ok">occupied &amp; released</span> <span class="pill warn">quarantine or expiring</span> <span class="pill transit">reserved or in transit</span> <span class="pill crit">contested or blocked</span>. Roughly one man in twelve has some form of colour vision deficiency, and a warehouse is exactly the population where that matters, so every state also carries a distinct border treatment (solid, dashed, heavy) and a text label at any zoom level where the slot is large enough to hold one. Nothing in Paikka is communicated by hue alone.</p>
+  <p>Five states, five colours, used identically everywhere: <span class="pill">free</span> <span class="pill ok">occupied &amp; released</span> <span class="pill warn">quarantine or expiring</span> <span class="pill transit">reserved or in transit</span> <span class="pill crit">contested or blocked</span> &mdash; plus one texture rather than a colour: a hatched fill for <strong>believed empty, not yet verified</strong> (&sect;10), so an unconfirmed slot can never be mistaken at a glance for a confirmed one. Roughly one man in twelve has some form of colour vision deficiency, and a warehouse is exactly the population where that matters, so every state also carries a distinct border treatment (solid, dashed, heavy) and a text label at any zoom level where the slot is large enough to hold one. Nothing in Paikka is communicated by hue alone.</p>
 
   <h3>The mobile app</h3>
 
@@ -1245,11 +1255,11 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
       <tbody>
         <tr>
           <td><strong>Pick</strong></td><td class="mono">A-03-2-B</td><td class="mono">NBC-P-000241-7</td>
-          <td>Verifies the pallet is the one the record expects there. Ends the binding. Opens custody in the operator&rsquo;s name. The slot turns <span class="pill">free</span> immediately &mdash; it really is free, the pallet is on the forks.</td>
+          <td>Verifies the pallet is the one the record expects there. Ends the binding, opens custody in the operator&rsquo;s name, and opens an obligation on the slot: it becomes <span class="pill warn">believed empty</span> until somebody confirms it, either by filling it or by scanning its seal (&sect;10).</td>
         </tr>
         <tr>
           <td><strong>Put</strong></td><td class="mono">C-11-1-A</td><td class="mono">NBC-P-000241-7</td>
-          <td>Checks the destination is free, permitted for this material and status, and within weight and size limits. Closes custody. Opens the new binding. Publishes to every open map within a second.</td>
+          <td>Checks the destination is free, permitted for this material and status, and within weight and size limits. Closes custody, opens the new binding, and &mdash; if this slot was somebody&rsquo;s open obligation &mdash; closes that too. Publishes to every open map within a second.</td>
         </tr>
       </tbody>
     </table>
@@ -1326,7 +1336,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
     <figcaption><b>Fig 07</b> Custody is the idea that makes the protocol safe. Older systems delete the old location on pick and write the new one on put, leaving a gap in which the pallet officially does not exist &mdash; and every interrupted move falls into that gap. Here the gap is itself an address, owned by a named person, with a clock on it.</figcaption>
   </figure>
 
-  <h3>Nine rules the protocol enforces</h3>
+  <h3>Eleven rules the protocol enforces</h3>
   <div class="tablewrap">
     <table>
       <thead><tr><th class="mono">#</th><th>Rule</th><th>What it prevents</th></tr></thead>
@@ -1340,6 +1350,8 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <tr><td class="mono">R7</td><td>Any override needs a reason code from a fixed list, and reason codes are reported weekly.</td><td>Overrides becoming the normal path because they are faster.</td></tr>
         <tr><td class="mono">R8</td><td>Nothing is ever deleted; corrections are new events that supersede old ones.</td><td>Audit gaps, and arguments about what the record said last Tuesday.</td></tr>
         <tr><td class="mono">R9</td><td>Every rule that blocks an action states the rule, the reason, and the next step, in plain Finnish or English.</td><td>Operators inventing workarounds because the app said &ldquo;error&rdquo; and nothing else.</td></tr>
+        <tr><td class="mono">R10</td><td>Every movement opens an obligation on the location the pallet <em>left</em>. The movement is not settled until that obligation is closed &mdash; by the pallet that replaces it, or by proof that the place is empty.</td><td>The single most common way a warehouse record rots: the new place is recorded, the old place is quietly forgotten and stays occupied on the screen forever.</td></tr>
+        <tr><td class="mono">R11</td><td>A location whose state has not been confirmed is never offered as a destination, and claiming it anyway requires confirming it first.</td><td>Sending a driver across the building to a slot nobody has actually looked at.</td></tr>
       </tbody>
     </table>
   </div>
@@ -1348,13 +1360,116 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
   <p>A forklift with double forks, or an operator moving a stack of two, holds custody of a list, not a single pallet. The app shows the list, the put step asks which pallet is going into this slot, and custody closes when the list is empty. Rule&nbsp;R6 counts the list, not the trip.</p>
 
   <h3>Putting it back where it came from</h3>
-  <p>This is the case your brief highlights, and in Paikka it needs no special handling at all: the slot was released the moment the pallet was picked, so returning to it is an ordinary put into a free slot. If someone else took that slot in the meantime &mdash; entirely legitimate, and the map showed it as free &mdash; the operator gets the conflict screen and one of the three exits in the next section. That is the whole point of releasing on pick rather than on put.</p>
+  <p>This is the case your brief highlights, and it needs no special handling: picking the pallet already opened the obligation to settle that slot, and putting the same pallet back into it closes that obligation in the most direct way possible &mdash; the place is occupied again, by the pallet the record already expected. One movement, both ends closed, nothing left open.</p>
+  <p>If someone else has taken the slot in the meantime &mdash; entirely legitimate if it was proved empty and released &mdash; the operator gets the conflict screen and one of the three exits in the next section. And if the slot is still standing open as <em>believed empty, unverified</em>, putting a pallet into it closes that too. Every ending is an ending.</p>
 </section>
 
 <section id="s10">
-  <div class="sechead"><span class="sig">S&middot;10</span><h2>Proving a slot is empty</h2></div>
+  <div class="sechead"><span class="sig">S&middot;10</span><h2>The double confirmation</h2></div>
 
-  <p class="lead-in">You asked for a double confirmation before a pallet is committed to a location that may still hold something. Here it is, and the second confirmation is physical &mdash; something the building itself can testify to, not a checkbox an operator can tap through.</p>
+  <p class="lead-in">A movement changes two places, so a movement must settle two places. Recording where the pallet went is the easy half; confirming what is now true of the place it <em>left</em> is the half that every warehouse system quietly skips &mdash; and it is the half that turns a database into folklore.</p>
+
+  <h3>A movement settles two places, not one</h3>
+  <p>When a pallet leaves <code>A-03-2-B</code> for <code>C-11-1-A</code>, two separate facts must end up in the record, and neither is allowed to be assumed:</p>
+  <ul>
+    <li><strong>The place it went to</strong> holds this pallet &mdash; confirmed by the put scans, after the destination checks.</li>
+    <li><strong>The place it came from</strong> now holds <em>either</em> the next pallet, scanned in, <em>or</em> nothing at all, proved. Not &ldquo;probably nothing&rdquo;. Not &ldquo;nothing, because we picked from it&rdquo;.</li>
+  </ul>
+  <p>The second fact is the one your brief is really about, and it deserves its own machinery. Picking a pallet is not proof that the slot is now empty: the operator may have taken only the top pallet off a double stack, another pallet may already have been slid in behind, the pick may have been recorded from the aisle without anyone looking into the slot, or the pallet may have been sitting somewhere the record never knew about. So Paikka treats every pick as opening a debt against the old location &mdash; an <strong>obligation</strong> &mdash; and the movement is not finished until that debt is paid.</p>
+
+  <figure>
+    <svg viewBox="0 0 900 460" role="img" aria-label="One movement opens two obligations: bind the destination, and close the origin. The origin closes when a successor pallet is scanned into it, when its vacancy seal is scanned to prove it empty, or it stays as believed-empty-unverified with a clock running and is withheld from suggestions until proved.">
+      <defs>
+        <marker id="ar-fx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path></marker>
+        <marker id="ar-acc-fx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path></marker>
+      </defs>
+      <g font-family="IBM Plex Mono, monospace" fill="currentColor" font-size="10.5">
+
+        <text x="40" y="28" font-size="10" letter-spacing="1.4" opacity=".6">ONE MOVEMENT &mdash; TWO PLACES THAT MUST END UP TRUE</text>
+
+        <!-- pick / put -->
+        <rect x="40" y="42" width="330" height="54" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+        <text x="58" y="66" font-size="12" font-weight="600">PICK &mdash; the pallet leaves A-03-2-B</text>
+        <text x="58" y="84" opacity=".75">scan slot, scan pallet</text>
+
+        <rect x="530" y="42" width="330" height="54" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
+        <text x="548" y="66" font-size="12" font-weight="600">PUT &mdash; the pallet arrives at C-11-1-A</text>
+        <text x="548" y="84" opacity=".75">scan slot, scan pallet</text>
+
+        <line x1="374" y1="69" x2="524" y2="69" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#ar-acc-fx)"></line>
+        <text x="449" y="60" font-size="10" text-anchor="middle" fill="var(--accent)">the pallet travels</text>
+
+        <line x1="205" y1="96" x2="205" y2="122" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar-fx)"></line>
+        <line x1="695" y1="96" x2="695" y2="122" stroke="currentColor" stroke-width="1.3" marker-end="url(#ar-fx)"></line>
+
+        <!-- obligations -->
+        <rect x="40" y="124" width="330" height="56" rx="4" fill="var(--warn-soft)" stroke="var(--warn)" stroke-width="1.6"></rect>
+        <text x="58" y="147" font-size="11.5" font-weight="600" fill="var(--warn)">OBLIGATION &mdash; close A-03-2-B</text>
+        <text x="58" y="166" fill="var(--warn)">what stands in it now? answer required</text>
+
+        <rect x="530" y="124" width="330" height="56" rx="4" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"></rect>
+        <text x="548" y="147" font-size="11.5" font-weight="600" fill="var(--accent)">OBLIGATION &mdash; bind C-11-1-A</text>
+        <text x="548" y="166" fill="var(--accent)">free? permitted? within limits?</text>
+
+        <!-- left routes -->
+        <line x1="205" y1="180" x2="205" y2="200" stroke="var(--warn)" stroke-width="1.3" marker-end="url(#ar-fx)"></line>
+        <rect x="40" y="202" width="330" height="52" rx="3" fill="none" stroke="var(--ok)" stroke-width="1.3"></rect>
+        <text x="58" y="222" font-size="11" font-weight="600" fill="var(--ok)">1 &middot; a successor pallet is scanned in</text>
+        <text x="58" y="240" fill="var(--ok)">A-03-2-B is occupied again &mdash; closed</text>
+
+        <rect x="40" y="262" width="330" height="52" rx="3" fill="none" stroke="var(--ok)" stroke-width="1.3"></rect>
+        <text x="58" y="282" font-size="11" font-weight="600" fill="var(--ok)">2 &middot; the vacancy seal is scanned</text>
+        <text x="58" y="300" fill="var(--ok)">A-03-2-B is proved empty &mdash; closed</text>
+
+        <rect x="40" y="322" width="330" height="78" rx="3" fill="none" stroke="var(--warn)" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+        <text x="58" y="342" font-size="11" font-weight="600" fill="var(--warn)">3 &middot; neither is possible right now</text>
+        <text x="58" y="360" fill="var(--warn)">believed empty, unverified &mdash; clock runs,</text>
+        <text x="58" y="376" fill="var(--warn)">shown hatched, offered to nobody, closed by</text>
+        <text x="58" y="392" fill="var(--warn)">the next person who reaches that slot</text>
+
+        <!-- right routes -->
+        <line x1="695" y1="180" x2="695" y2="200" stroke="var(--accent)" stroke-width="1.3" marker-end="url(#ar-acc-fx)"></line>
+        <rect x="530" y="202" width="330" height="52" rx="3" fill="none" stroke="var(--ok)" stroke-width="1.3"></rect>
+        <text x="548" y="222" font-size="11" font-weight="600" fill="var(--ok)">free and permitted</text>
+        <text x="548" y="240" fill="var(--ok)">bound on the spot &mdash; closed</text>
+
+        <rect x="530" y="262" width="330" height="52" rx="3" fill="none" stroke="var(--crit)" stroke-width="1.3"></rect>
+        <text x="548" y="282" font-size="11" font-weight="600" fill="var(--crit)">believed to hold something else</text>
+        <text x="548" y="300" fill="var(--crit)">the three exits of figure 09 &mdash; never a skip</text>
+
+        <rect x="530" y="322" width="330" height="78" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="5 3"></rect>
+        <text x="548" y="342" font-size="11" font-weight="600">a floor block or a lane</text>
+        <text x="548" y="360" opacity=".8">no seal to cover, so vacancy is proved by</text>
+        <text x="548" y="376" opacity=".8">counting: every pallet in the block is</text>
+        <text x="548" y="392" opacity=".8">scanned and the count must reconcile</text>
+
+        <!-- settled bar -->
+        <rect x="40" y="412" width="820" height="34" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"></rect>
+        <text x="450" y="434" font-size="11.5" text-anchor="middle" fill="var(--accent)" font-weight="600">Settled means both ends closed. Until then the movement sits on the attention list, with a name against it.</text>
+      </g>
+    </svg>
+    <figcaption><b>Fig 08</b> The origin obligation is the mechanism your brief asked for. A pallet moving out of a slot is a question &mdash; <em>so what is in there now?</em> &mdash; and the system refuses to file the movement away until somebody has answered it, either by filling the slot or by proving it empty.</figcaption>
+  </figure>
+
+  <h3>Closing the place it left</h3>
+  <p>In practice route 1 covers most of the traffic, because most moves are shuffles: a pallet comes out, another goes in, and the slot is closed by ordinary work without anybody thinking about it. Route 2 is a two-second extra scan while the operator is still standing at the slot with the forks up.</p>
+  <p>Whether route 2 is asked for immediately is a <strong>policy per zone</strong>, agreed with your team rather than imposed by us:</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Zone</th><th>Policy</th><th>Reasoning</th></tr></thead>
+      <tbody>
+        <tr><td>Rack levels 1&ndash;2, quarantine cage, points of use</td><td><strong>Verify at pick</strong> &mdash; the app asks for the seal scan as the last step of the pick</td><td>The operator is already there, the seal is at eye or waist height, and these are the slots that get shuffled most</td></tr>
+        <tr><td>Rack levels 3 and above</td><td><strong>Verify on next touch</strong> &mdash; the slot goes to <em>believed empty, unverified</em></td><td>A seal 1.2&nbsp;m deep and four metres up is not honestly scannable from the aisle floor; pretending otherwise trains people to fake scans</td></tr>
+        <tr><td>Floor blocks and staging lanes</td><td><strong>Reconcile the count</strong> at the next put or pick in that block</td><td>Nothing covers a seal in an open block, so the meaningful proof is the count, not a sticker</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>An unverified slot is not a failure state and nobody is chased for it within the shift. It is simply a slot the system will not claim to know about: hatched on the map, excluded from put-away suggestions, and first in the queue for the next cycle count. If an operator does choose it as a destination, the app asks them to confirm what they find when they get there &mdash; which closes the obligation as a by-product of the work. Obligations older than a shift appear on the supervisor&rsquo;s attention list; older than three days, on the weekly quality review.</p>
+
+  <div class="rule-box">
+    <span class="tag">Design rule 02</span>
+    <p><strong>A pallet never leaves a hole behind it.</strong> Every departure leaves either a successor or a proof. The system may hold &ldquo;I don&rsquo;t know yet, and here is the clock&rdquo; &mdash; it may never hold &ldquo;occupied by a pallet that left three months ago&rdquo;, which is what every uninstrumented warehouse holds by default.</p>
+  </div>
 
   <h3>The vacancy seal</h3>
   <p>At the back of every rack slot, on the rear beam or the back stop, we apply a second small label: the slot&rsquo;s code with a <code>&bull;V</code> suffix, in warning yellow, dashed border, unmistakably not a location label. A pallet standing in that slot covers it. The geometry does the work: <strong>if your camera can read the vacancy seal, there is no pallet in front of it.</strong></p>
@@ -1364,10 +1479,11 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
     <p><strong>Vacancy is proved, not asserted.</strong> Whenever the system believes a slot is occupied and the operator believes it is empty, the disagreement is settled by scanning the seal &mdash; not by an &ldquo;are you sure?&rdquo; dialog. A tap proves willingness; a seal scan proves a fact about the physical world.</p>
   </div>
 
-  <p>Two confirmations therefore stand behind every contested put-away, and they are independent of each other:</p>
+  <p>The seal is what makes both halves of the double confirmation physical rather than clerical. At the <strong>origin</strong> it answers &ldquo;is this slot really empty now?&rdquo;; at the <strong>destination</strong> it answers &ldquo;is this slot really empty before I commit a pallet to it?&rdquo; The same sticker, the same two-second scan, read from two directions.</p>
+  <p>And in both directions the physical proof is paired with a record proof, independent of it:</p>
   <ul>
-    <li><strong>Physical confirmation</strong> &mdash; the seal scan (or, for floor blocks and lanes where a seal cannot be covered, a counted confirmation: the operator scans every pallet physically present in the block, and the count must reconcile).</li>
-    <li><strong>Record confirmation</strong> &mdash; the system resolves what happened to the pallet it thought was there. It is marked <span class="pill crit">missing</span>, a search task is raised, and it is <em>not</em> quietly forgotten. A slot cannot be re-used while its previous occupant is unaccounted for without leaving a trail.</li>
+    <li><strong>Physical confirmation</strong> &mdash; the seal scan, or for floor blocks and lanes where nothing covers a seal, a counted confirmation: every pallet physically present is scanned and the count must reconcile.</li>
+    <li><strong>Record confirmation</strong> &mdash; the system accounts for the pallet it believed was there. It is marked <span class="pill crit">missing</span>, a search task is raised, and it is <em>not</em> quietly forgotten. No slot is emptied or re-used while its previous occupant is unaccounted for without leaving a trail that somebody owns.</li>
   </ul>
 
   <p>Honest limitations, stated up front: on levels 3 and above, a seal at the back of a 1.2&nbsp;m deep slot may be out of camera range from the aisle floor. Our answer is not to pretend otherwise &mdash; it is that seals are mandatory on levels 1&ndash;2 (where the great majority of conflicts happen, because that is where hand pallet trucks work), optional above, and every slot without a readable seal falls back to the dispute path, which is a first-class outcome rather than a failure. During the phase&nbsp;1 pilot we measure seal read rates per level and decide whether long-range imagers on the forklifts are worth their cost.</p>
@@ -1442,11 +1558,27 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="450" y="462" font-size="10" text-anchor="middle" opacity=".65">There is deliberately no fourth exit labelled &ldquo;skip&rdquo;.</text>
       </g>
     </svg>
-    <figcaption><b>Fig 08</b> The conflict path is the most important screen in the system, so it is designed for speed rather than for punishment. An operator under time pressure will take the fastest route available &mdash; so the fastest routes are the honest ones.</figcaption>
+    <figcaption><b>Fig 09</b> The conflict path is the most important screen in the system, so it is designed for speed rather than for punishment. An operator under time pressure will take the fastest route available &mdash; so the fastest routes are the honest ones.</figcaption>
   </figure>
 
   <h3>The mirror case: the system says free, but something is standing there</h3>
-  <p>Equally common, and handled by the same machinery. The operator scans the slot, the app says free, the operator sees a pallet. One tap on &ldquo;something is already here&rdquo;, scan it, and adoption runs: the found pallet is re-bound to this slot, its previous location is released, an exception is logged against whoever last moved it &mdash; not as blame, but so that the pattern is visible if it repeats &mdash; and the incoming pallet gets a fresh suggestion. Section&nbsp;12 explains why this behaviour, applied thousands of times, makes the database converge on reality instead of drifting away from it.</p>
+  <p>Equally common, and handled by the same machinery. The operator scans the slot, the app says free, the operator sees a pallet. One tap on &ldquo;something is already here&rdquo;, scan it, and adoption runs: the found pallet is re-bound to this slot and the incoming pallet gets a fresh suggestion.</p>
+  <p>Note what adoption does to the <em>other</em> end. The adopted pallet was, according to the record, standing somewhere else &mdash; so that somewhere else has just been vacated, on paper, without anyone looking at it. Adoption therefore opens an obligation on it exactly as a pick would: <em>what is in D-07-1-A now?</em> The rule holds no matter how a pallet&rsquo;s location changes &mdash; a normal move, an adoption, a correction posted from the office &mdash; the place it is leaving always gets a question asked of it, and an owner for the answer. Section&nbsp;12 explains why this behaviour, applied thousands of times, makes the database converge on reality instead of drifting away from it.</p>
+
+  <h3>Four states, and no fifth</h3>
+  <p>The whole of this section reduces to one guarantee: at any instant, every location in the building is in exactly one of four states, and the two honest ones are always distinguishable from each other on the screen.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>State</th><th>What it means</th><th>How it got there</th><th>How it leaves</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill ok">occupied</span></td><td>This exact pallet is standing here</td><td>A put, scanned at the slot</td><td>A pick, which opens the obligation</td></tr>
+        <tr><td><span class="pill">empty</span></td><td>Confirmed empty, and confirmed recently</td><td>A seal scan, or a reconciled count</td><td>A put, or the confirmation ageing out</td></tr>
+        <tr><td><span class="pill warn">believed empty</span></td><td>Nobody has looked since the pallet left. The system says so out loud instead of guessing</td><td>A pick with no immediate proof, or a confirmation that has aged out</td><td>Any scan at that slot: a put, a seal, or a count</td></tr>
+        <tr><td><span class="pill crit">contested</span></td><td>Two accounts of this slot disagree. Frozen until a person resolves it</td><td>A dispute, or a rejected offline move</td><td>A supervisor, with a photo and a decision</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>There is deliberately no state meaning &ldquo;occupied, probably, we think, at some point&rdquo; &mdash; which is the state most warehouse records are actually in, and the reason a system can look healthy and still send you to an empty slot.</p>
 </section>
 
 <section id="s11">
@@ -1489,7 +1621,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
 
   <h3>Confidence, not certainty</h3>
   <p>Every binding carries a <strong>confidence</strong> value that decays with time since the last physical scan. A slot scanned an hour ago is near-certain. One last touched in November is a hypothesis. The map renders low-confidence slots with a hatched fill, so a supervisor can see at a glance which parts of the warehouse are well known and which are folklore.</p>
-  <p>Confidence is not decoration &mdash; it drives work. The cycle-count generator picks the lowest-confidence, highest-value, fastest-moving slots each week and issues short count tasks: fifteen slots, five minutes, done between other jobs. There is no annual stock-take weekend, because the counting never stops and never piles up.</p>
+  <p>Confidence is not decoration &mdash; it drives work. Open origin obligations (&sect;10) go straight to the front of the queue, because a slot somebody vacated an hour ago and nobody has looked at since is the most productive thing in the building to go and look at. After those, the cycle-count generator picks the lowest-confidence, highest-value, fastest-moving slots each week and issues short count tasks: fifteen slots, five minutes, done between other jobs. There is no annual stock-take weekend, because the counting never stops and never piles up.</p>
 
   <h3>The three healing mechanisms</h3>
   <div class="cards three">
@@ -1519,9 +1651,9 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
 <section id="s13">
   <div class="sechead"><span class="sig">S&middot;13</span><h2>The exception catalogue</h2></div>
 
-  <p class="lead-in">Forty-eight ways this can go wrong, and what happens in each. This section is the reason to build rather than buy: no generic product will handle your cage, your quarantine rules and your steel this specifically.</p>
+  <p class="lead-in">Fifty-two ways this can go wrong, and what happens in each. This section is the reason to build rather than buy: no generic product will handle your cage, your quarantine rules and your steel this specifically.</p>
 
-  <p>Every exception below is a first-class record in the system: it has an identifier, a state (open, in progress, resolved), an owner, an age and a resolution note. Nothing in Paikka fails by showing a red toast that disappears in three seconds.</p>
+  <p>Every exception below is a first-class record in the system: it has an identifier, a state (open, in progress, resolved), an owner, an age and a resolution note. Nothing in Paikka fails by showing a red toast that disappears in three seconds. Identifiers are permanent and are assigned as exceptions are catalogued, so they are not in strict sequence within a group &mdash; E49 sits with the location exceptions it belongs to, not at the end.</p>
 
   <div class="tablewrap">
     <table>
@@ -1547,6 +1679,8 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <tr><td class="mono">E16</td><td>Floor block holds a different number of pallets than recorded</td><td>Count reconciliation at any put or during a sweep</td><td>Operator scans every pallet in the block; the set is replaced wholesale; differences become adoption or missing events</td><td>Operator</td></tr>
         <tr><td class="mono">E17</td><td>A pallet is taken from the back of a FIFO lane</td><td>Position in lane vs. pick</td><td>Allowed &mdash; blocking it would cause worse behaviour &mdash; but recorded with a reason code and reported weekly</td><td>Supervisor</td></tr>
         <tr><td class="mono">E18</td><td>Two operators head for the same free slot</td><td>Soft lock at destination selection</td><td>The second sees it as reserved before driving there, and is offered the next best slot; locks expire in ten minutes</td><td>System</td></tr>
+        <tr><td class="mono">E49</td><td>The slot a pallet left is still unconfirmed at the end of the shift &mdash; nobody has put anything in it or proved it empty</td><td>The origin obligation&rsquo;s clock (&sect;10)</td><td>The slot stays hatched and out of every suggestion; it goes to the top of the next morning&rsquo;s count list; the supervisor sees the count of open obligations, not each one individually</td><td>Supervisor</td></tr>
+        <tr><td class="mono">E50</td><td>Closing an origin finds a pallet in a slot that was believed empty</td><td>Seal scan fails, or the operator reports what they see</td><td>Adoption: the found pallet is bound here and the obligation closes as <em>occupied</em>. Crucially, the found pallet&rsquo;s own previous slot inherits a fresh obligation &mdash; the chain follows the truth as far as it goes</td><td>Operator</td></tr>
         <tr class="grouprow"><td colspan="5">C &middot; Movement and custody</td></tr>
         <tr><td class="mono">E19</td><td>Operator picks a pallet and forgets to put it anywhere</td><td>Custody clock passes 30&nbsp;minutes</td><td>Gentle reminder to the operator, then a supervisor notification at 60&nbsp;minutes; the pallet stays visible and addressed the whole time</td><td>Operator</td></tr>
         <tr><td class="mono">E20</td><td>Shift ends while holding custody</td><td>Log-out attempt</td><td>Log-out refused with two ways out: complete the put, or hand over to a named colleague who confirms by scanning the pallet &mdash; a two-party transfer</td><td>Operator</td></tr>
@@ -1557,6 +1691,8 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <tr><td class="mono">E25</td><td>A move is recorded but the pallet never actually moved</td><td>Next physical encounter contradicts the record</td><td>Adoption heals it; if the same operator produces several, a coaching flag &mdash; usually it means the scan flow is being gamed to save time, which is a design problem worth knowing about</td><td>Supervisor</td></tr>
         <tr><td class="mono">E26</td><td>Handover between shifts with pallets mid-journey</td><td>Explicit handover flow</td><td>Both parties scan; custody transfers with an unbroken chain; the outgoing operator&rsquo;s clock stops, the incoming one&rsquo;s starts</td><td>Operators</td></tr>
         <tr><td class="mono">E27</td><td>A put is recorded in a zone the operator could not plausibly have reached</td><td>Optional Wi-Fi zone plausibility check</td><td>Soft warning only, never a block &mdash; positioning indoors is not reliable enough to bet a shift on. Repeated warnings surface as a pattern</td><td>Supervisor</td></tr>
+        <tr><td class="mono">E51</td><td>A put with no matching pick &mdash; a pallet is set down somewhere while the record still shows it in another slot</td><td>The pallet&rsquo;s live binding points elsewhere at put time</td><td>The put is accepted (the operator is holding the evidence), and an obligation opens automatically on the slot the record just lost. The same happens for a correction posted from the office: no location is ever vacated silently, however the vacating happens</td><td>System &rarr; Operator</td></tr>
+        <tr><td class="mono">E52</td><td>A partial pick from a stack or a floor block leaves the count ambiguous</td><td>Pick from a location whose capacity is greater than one</td><td>The block cannot be closed by a seal, so it is closed by counting: the app asks for the remaining pallets to be scanned, and the block stays unverified until the count agrees with the record</td><td>Operator</td></tr>
         <tr class="grouprow"><td colspan="5">D &middot; Quantity, batches and quality</td></tr>
         <tr><td class="mono">E28</td><td>Only part of a pallet is consumed at the line</td><td>Quantity entry at the point of use</td><td>Quantity decrements, the pallet lives on, the remainder returns to the racks with its original batch and expiry intact</td><td>Operator</td></tr>
         <tr><td class="mono">E29</td><td>Pallet is emptied entirely</td><td>Quantity reaches zero</td><td>The system asks for a closing scan rather than assuming; the pallet becomes consumed, the slot frees, the code retires</td><td>Operator</td></tr>
@@ -1656,7 +1792,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="430" y="316" font-size="10">Overwriting one operator&rsquo;s work with another&rsquo;s is how ghosts are born.</text>
       </g>
     </svg>
-    <figcaption><b>Fig 09</b> The sync design in one picture. The common shortcut &mdash; let the last write win &mdash; is exactly wrong here: the two writes describe two different physical realities and at most one is true, so the disagreement must reach a human who can walk over and look.</figcaption>
+    <figcaption><b>Fig 10</b> The sync design in one picture. The common shortcut &mdash; let the last write win &mdash; is exactly wrong here: the two writes describe two different physical realities and at most one is true, so the disagreement must reach a human who can walk over and look.</figcaption>
   </figure>
 
   <h3>What the operator sees, and what they are promised</h3>
@@ -1671,6 +1807,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
       </tbody>
     </table>
   </div>
+  <p>Obligations behave the same way offline: a pick recorded on a phone with no signal creates the origin obligation locally, and it travels with the queued movement, so a slot vacated in the far corner of row E at 23:05 is already hatched on the office map the moment the phone reconnects &mdash; not the next morning when somebody notices.</p>
   <p>The promise made to the operator is narrow and always kept: <em>your scans are never lost</em>. The promise deliberately <em>not</em> made is &ldquo;the slot you are looking at is definitely free&rdquo;, because offline that cannot be true. Every warehouse app that pretends otherwise trains its users to distrust it.</p>
   <p>Queue hygiene: the app syncs opportunistically on any connectivity, warns at five queued moves or ten minutes of queue age, warns loudly at thirty minutes, and shows a supervisor which devices are carrying unsynced work. Access-point coverage in the known dead spots is part of phase&nbsp;0 &mdash; software resilience is a safety net, not an excuse for bad Wi-Fi.</p>
 </section>
@@ -1724,7 +1861,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="304" y="86">code, kind, capacity</text>
         <text x="304" y="102">zone, x/y/level for the map</text>
         <text x="304" y="118">allowed classes &amp; statuses</text>
-        <text x="304" y="134">weight limit, state</text>
+        <text x="304" y="134">weight limit, state, verified_at</text>
 
         <!-- BINDING -->
         <rect x="552" y="100" width="188" height="106" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.8"></rect>
@@ -1763,7 +1900,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <rect x="40" y="308" width="212" height="86" rx="3" fill="var(--panel-2)" stroke="currentColor" stroke-width="1.2"></rect>
         <rect x="40" y="308" width="212" height="24" fill="var(--crit-soft)"></rect>
         <text x="54" y="325" font-size="11.5" font-weight="600" fill="var(--crit)">exception</text>
-        <text x="54" y="348">catalogue id (E01&hellip;E48)</text>
+        <text x="54" y="348">catalogue id (E01&hellip;E52)</text>
         <text x="54" y="364">state, owner, opened, closed</text>
         <text x="54" y="380">photos, note, resolution</text>
         <line x1="290" y1="350" x2="258" y2="350" stroke="currentColor" stroke-width="1.2" marker-end="url(#ar-f10)"></line>
@@ -1785,16 +1922,21 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="498" y="432" font-size="10.5">code alias</text>
         <text x="498" y="446" font-size="9.5" opacity=".7">retired &rarr; current</text>
 
-        <rect x="632" y="414" width="132" height="40" rx="3" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></rect>
+        <rect x="632" y="414" width="112" height="40" rx="3" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></rect>
         <text x="646" y="432" font-size="10.5">count sheet</text>
         <text x="646" y="446" font-size="9.5" opacity=".7">blind, two-person</text>
+
+        <rect x="756" y="414" width="108" height="40" rx="3" fill="var(--warn-soft)" stroke="var(--warn)" stroke-width="1"></rect>
+        <text x="770" y="432" font-size="10.5" fill="var(--warn)">obligation</text>
+        <text x="770" y="446" font-size="9.5" fill="var(--warn)">close the origin</text>
       </g>
     </svg>
-    <figcaption><b>Fig 10</b> The event log is the system of record; bindings, stock levels and the map are all views built from it. This is what makes &ldquo;show me every location batch B2418 ever occupied, and who touched it&rdquo; a two-second query rather than an archaeology project.</figcaption>
+    <figcaption><b>Fig 11</b> The event log is the system of record; bindings, stock levels and the map are all views built from it. This is what makes &ldquo;show me every location batch B2418 ever occupied, and who touched it&rdquo; a two-second query rather than an archaeology project.</figcaption>
   </figure>
 
   <h3>Why append-only matters here specifically</h3>
   <p>Pharmaceutical and cosmetics quality auditors assess records against the data-integrity principles known as ALCOA+: attributable, legible, contemporaneous, original, accurate, plus complete, consistent, enduring and available. An append-only event log with a named actor and a server timestamp satisfies those properties by construction rather than by policy. Each event also stores the hash of its predecessor, so any tampering with history is detectable &mdash; a cheap property to add on day one and impossible to retrofit convincingly.</p>
+  <p>The <em>obligation</em> table is worth one sentence of its own, because it is the only table whose rows exist to be destroyed: one row per location left behind by a movement, carrying the slot, the movement that vacated it, the clock, and the eventual proof that closed it. An empty obligation table means the map and the floor agree everywhere &mdash; which is a target, not an expectation, and the count of open rows is the single best one-number health check the system produces.</p>
   <p>Corrections are therefore never edits. A wrong quantity is fixed by a correcting event that references the original, and both are visible forever. The current state is what you get by replaying the log; the history is what you get by reading it.</p>
 </section>
 
@@ -1898,7 +2040,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="40" y="412" font-size="10.5">The rules engine reads rules from tables, not code, so a new material class or a changed weight limit is an afternoon.</text>
       </g>
     </svg>
-    <figcaption><b>Fig 11</b> The whole system is one service, one database, and a web app that happens to work without the network. The ERP connection is a seam, not a dependency &mdash; Paikka runs a full shift with the ERP offline, and catches up afterwards.</figcaption>
+    <figcaption><b>Fig 12</b> The whole system is one service, one database, and a web app that happens to work without the network. The ERP connection is a seam, not a dependency &mdash; Paikka runs a full shift with the ERP offline, and catches up afterwards.</figcaption>
   </figure>
 
   <h3>Scanning technology, honestly assessed</h3>
@@ -2024,6 +2166,8 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <tr><td><strong>Put-away accuracy</strong></td><td>Cycle counts: slots whose contents match the record</td><td class="num">unknown &mdash; that is the problem</td><td class="num">&gt; 99 %</td></tr>
         <tr><td><strong>First-scan success rate</strong></td><td>Scans decoded without manual entry, by zone and level</td><td class="num">n/a</td><td class="num">&gt; 97 %</td></tr>
         <tr><td><strong>Discrepancies per 1 000 movements</strong></td><td>Exceptions of type E10, E11, E38 per movement volume</td><td class="num">n/a</td><td class="num">&lt; 5, and falling</td></tr>
+        <tr><td><strong>Origin obligations closed in shift</strong></td><td>Slots vacated during a shift that were confirmed before it ended</td><td class="num">n/a &mdash; the gap this closes</td><td class="num">&gt; 95 %</td></tr>
+        <tr><td><strong>Open obligations at any moment</strong></td><td>Locations vacated but not yet confirmed</td><td class="num">effectively unbounded today</td><td class="num">&lt; 15 across the warehouse</td></tr>
         <tr><td><strong>Low-confidence slots</strong></td><td>Share of occupied slots not physically confirmed in 60 days</td><td class="num">effectively all of them</td><td class="num">&lt; 10 %</td></tr>
         <tr><td><strong>Recall trace time</strong></td><td>&ldquo;Which finished batches used supplier lot X?&rdquo;, timed</td><td class="num">hours to days</td><td class="num">under 5 min</td></tr>
         <tr><td><strong>Overdue custody events</strong></td><td>Movements open longer than 30 minutes</td><td class="num">n/a</td><td class="num">&lt; 1 % of movements</td></tr>
@@ -2095,7 +2239,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
         <text x="40" y="328" font-size="10.5" opacity=".8">If first-scan rates, seal readability or acceptance fall short in one zone, that is the cheapest moment to change course.</text>
       </g>
     </svg>
-    <figcaption><b>Fig 12</b> Phase&nbsp;1 runs the pilot zone <em>alongside</em> the existing method, not instead of it. Dual running for three weeks costs a little extra effort and buys the one thing no amount of design can provide: evidence that the protocol survives a real Tuesday.</figcaption>
+    <figcaption><b>Fig 13</b> Phase&nbsp;1 runs the pilot zone <em>alongside</em> the existing method, not instead of it. Dual running for three weeks costs a little extra effort and buys the one thing no amount of design can provide: evidence that the protocol survives a real Tuesday.</figcaption>
   </figure>
 
   <h3>What each phase delivers</h3>
@@ -2194,6 +2338,7 @@ https://paikka.nordicbio.fi/l/A-03-2-B            &larr; location</code></pre>
       <tbody>
         <tr><td><strong>Adoption</strong></td><td>The system accepting what an operator physically sees, and correcting its own record on the spot</td></tr>
         <tr><td><strong>ALCOA+</strong></td><td>The data-integrity principles auditors use: attributable, legible, contemporaneous, original, accurate, plus complete, consistent, enduring, available</td></tr>
+        <tr><td><strong>Believed empty</strong></td><td>A slot a pallet has left that nobody has confirmed yet &mdash; shown hatched, offered to no one, and carrying a clock</td></tr>
         <tr><td><strong>Binding</strong></td><td>The live statement that a particular pallet is in a particular location</td></tr>
         <tr><td><strong>Blind count</strong></td><td>A stock count where the counter is not shown the expected number, so the count is evidence rather than confirmation</td></tr>
         <tr><td><strong>Check character</strong></td><td>An extra character that makes a mistyped code detectable</td></tr>
@@ -2301,7 +2446,16 @@ https://paikka.nordicbio.fi/v/A-03-2-B</code></pre>
 }
 
 201 Created
-{ "state": "STORED", "binding": { "from": "2026-03-14T09:12:45Z", "confidence": 1.0 } }
+{
+  "state": "STORED",
+  "binding": { "from": "2026-03-14T09:12:45Z", "confidence": 1.0 },
+  "originObligation": {                 // the other end of the movement
+    "location": "A-03-2-B",
+    "state": "BELIEVED_EMPTY",          // until proved or refilled
+    "closesBy": "2026-03-14T22:00:00Z",
+    "closeWith": ["SUCCESSOR_PALLET", "VACANCY_SEAL", "COUNT"]
+  }
+}
 
 409 Conflict
 {
@@ -2311,6 +2465,9 @@ https://paikka.nordicbio.fi/v/A-03-2-B</code></pre>
   "exceptionCatalogueId": "E10"
 }
 
+POST /api/v1/locations/A-03-2-B/close  &rarr; closes an origin obligation: seal scan,
+                                         successor pallet, or a reconciled count
+GET  /api/v1/obligations?state=open    &rarr; what the warehouse has not looked at yet
 GET  /api/v1/locations/A-03-2-B        &rarr; slot, occupant, rules, confidence, history
 GET  /api/v1/pallets/NBC-P-000241-7    &rarr; material, batch, status, location, lineage
 GET  /api/v1/map?zone=RAW              &rarr; everything one map view needs, in one call
